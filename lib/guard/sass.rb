@@ -6,7 +6,7 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    VERSION = '1.0.0'
+    VERSION = '0.0.1'
     attr_accessor :options
         
     
