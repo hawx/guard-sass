@@ -20,7 +20,7 @@ module Guard
       content = File.new(file).read
       # sass or scss?
       type = file[-4..-1].to_sym
-      engine = ::Sass::Engine.new(content, {:syntax => type})
+      engine = ::Sass::Engine.new(content, {:syntax => type, :load_paths => @options[:load_paths]})
       engine.render
     end
     
@@ -44,6 +44,7 @@ module Guard
   
     def start
       @options[:output] = options[:output] || 'css'
+      @options[:load_paths] = Dir.glob('*')
     end
     
     # Build the files given
