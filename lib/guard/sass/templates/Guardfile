@@ -1,5 +1,5 @@
 guard 'sass' do
-  watch('^sass/*')
-  # watch('^_sass/*')
-  # watch('^scss/*)
+  watch('^sass/(.*)')
+  # watch('^_sass/(.*)')
+  # watch('^scss/(.*))
 end
