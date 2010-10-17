@@ -9,22 +9,7 @@ module Guard
     VERSION = '0.0.1'
     attr_accessor :options
         
-    
-    # Gets the actual files in the path, ignores files beginning with
-    # an underscore as you expect from sass.
-    #
-    # @param paths [Array] list of paths which have been modified
-    # @return [Array] files found
-    #
-    def get_sass_files(paths)
-      files = []
-      paths.each do |path|
-        files =  Dir.glob File.join(path, '*')
-      end
-      files.delete_if {|i| File.basename(i)[0] == "_"}
-      files
-    end
-    
+            
     # Builds the sass or scss. Determines engine to use by extension
     # of path given.
     #
@@ -46,8 +31,9 @@ module Guard
     # @return [String] path to file where output should be written
     #
     def get_output(file)
-      folder = File.dirname(file).split('/')[0..-2]
-      r = File.join folder, @options[:output], File.basename(file).split('.')[0]
+      folder = File.join File.dirname(file), '..', @options[:output]
+      FileUtils.mkdir_p folder
+      r = File.join folder, File.basename(file).split('.')[0]
       r << '.css'
     end
     
@@ -60,10 +46,9 @@ module Guard
       @options[:output] = options[:output] || 'css'
     end
     
-    # Build the paths given
+    # Build the files given
     def run_on_change(paths)
-      files = get_sass_files(paths)
-      files.each do |file|
+      paths.each do |file|
         File.open(get_output(file), 'w') {|f| f.write(build_sass(file)) }
       end
     end
