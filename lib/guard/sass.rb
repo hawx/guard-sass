@@ -49,7 +49,9 @@ module Guard
     # Build the files given
     def run_on_change(paths)
       paths.each do |file|
-        File.open(get_output(file), 'w') {|f| f.write(build_sass(file)) }
+        unless File.basename(file)[0] == "_"
+          File.open(get_output(file), 'w') {|f| f.write(build_sass(file)) }
+        end
       end
     end
 
