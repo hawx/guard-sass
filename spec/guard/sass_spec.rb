@@ -3,23 +3,9 @@ require 'spec_helper'
 describe Guard::Sass do
   subject { Guard::Sass.new }
   
-  describe "start" do
+  describe "initialize" do
     it "should set default output path" do
-      subject.start
       subject.options[:output].should == 'css'
-    end
-  end
-  
-  
-  describe "getting sass files" do
-    it "should get the files under the path given" do
-      result = subject.get_sass_files(['sass-test/_sass'])
-      result.should == ["sass-test/_sass/print.scss", "sass-test/_sass/screen.sass"]
-    end
-    
-    it "should ignore files beginning with an underscore" do
-      result = subject.get_sass_files(['sass-test/_sass'])
-      result.should_not include "sass-test/_sass/_settings.sass"
     end
   end
   
@@ -73,7 +59,7 @@ EOS
     it "should change the folder to /css (by default)" do
       subject.options[:output] = "css"
       r = subject.get_output("sass-test/_sass/screen.scss")
-      File.dirname(r).should == "sass-test/css"
+      File.dirname(r).should == "sass-test/_sass/../css"
     end
     
     it "should not change the file name" do
