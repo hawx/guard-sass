@@ -6,8 +6,14 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    VERSION = '0.0.2'
+    VERSION = '0.0.3'
     attr_accessor :options
+    
+    def initialize(watchers = [], options = {})
+      @watchers, @options = watchers, options
+      @options[:output] ||= 'css'
+      @options[:load_paths] ||= Dir.glob('*')
+    end
         
             
     # Builds the sass or scss. Determines engine to use by extension
@@ -41,11 +47,6 @@ module Guard
     # ================
     # = Guard method =
     # ================
-  
-    def start
-      @options[:output] = options[:output] || 'css'
-      @options[:load_paths] = Dir.glob('*')
-    end
     
     # Build the files given
     def run_on_change(paths)
@@ -53,6 +54,7 @@ module Guard
         unless File.basename(file)[0] == "_"
           File.open(get_output(file), 'w') {|f| f.write(build_sass(file)) }
         end
+        puts "-> rebuilt #{file}"
       end
     end
 
