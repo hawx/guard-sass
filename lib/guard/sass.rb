@@ -6,7 +6,7 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    VERSION = '0.0.3'
+    VERSION = '0.0.4'
     attr_accessor :options
     
     def initialize(watchers = [], options = {})
@@ -47,6 +47,19 @@ module Guard
     # ================
     # = Guard method =
     # ================
+    
+    # Build all files being watched
+    def run_all
+      patterns = @watchers.map {|w| w.pattern}
+      files = Dir.glob('**/*.*')
+      r = []
+      files.each do |file|
+        patterns.each do |pattern|
+          r << file if file.match(Regexp.new(pattern))
+        end
+      end
+      run_on_change(r)
+    end
     
     # Build the files given
     def run_on_change(paths)

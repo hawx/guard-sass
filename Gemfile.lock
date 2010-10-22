@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    guard-sass (0.0.3)
+    guard-sass (0.0.4)
       guard (~> 0.1.0)
       haml (~> 3.0.0)
 

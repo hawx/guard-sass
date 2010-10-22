@@ -9,6 +9,13 @@ describe Guard::Sass do
     end
   end
   
+  describe "run all" do
+    it "should rebuild all files being watched" do
+      Guard::Sass.stub(:run_on_change).with([]).and_return([])
+      subject.run_all
+    end
+  end
+  
   describe "building sass to css" do
     it "should convert sass to css" do
       file = "sass-test/_sass/screen.sass"
