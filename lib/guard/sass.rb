@@ -6,13 +6,13 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    VERSION = '0.0.5'
+    VERSION = '0.0.6'
     attr_accessor :options
     
     def initialize(watchers = [], options = {})
       @watchers, @options = watchers, options
       @options[:output] ||= 'css'
-      @options[:load_paths] ||= Dir.glob('*')
+      @options[:load_paths] ||= Dir.glob('**/**').find_all {|i| File.directory?(i)}
     end
         
             
