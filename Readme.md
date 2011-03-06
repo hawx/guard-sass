@@ -30,3 +30,8 @@ Defaults to writing to 'css/' but this can be changed....
     guard 'sass', :output => 'styles' do
       watch('^sass/(.*)')
     end
+
+
+## Contributors
+
+- snappycode (http://github.com/snappycode)
