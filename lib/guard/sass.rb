@@ -1,5 +1,6 @@
 require 'guard'
 require 'guard/guard'
+require 'guard/watcher'
 
 require 'sass'
 
@@ -10,9 +11,10 @@ module Guard
     attr_accessor :options
     
     def initialize(watchers = [], options = {})
-      @watchers, @options = watchers, options
-      @options[:output] ||= 'css'
-      @options[:load_paths] ||= Dir.glob('**/**').find_all {|i| File.directory?(i)}
+      super(watchers, {
+        :output => 'css',
+        :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i)}
+      }.merge(options))
     end
         
             
@@ -50,24 +52,28 @@ module Guard
     
     # Build all files being watched
     def run_all
-      patterns = @watchers.map {|w| w.pattern}
-      files = Dir.glob('**/*.*')
-      r = []
-      files.each do |file|
-        patterns.each do |pattern|
-          r << file if file.match(Regexp.new(pattern))
-        end
-      end
-      run_on_change(r)
+      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '*.*'))))
     end
     
     # Build the files given
     def run_on_change(paths)
-      paths.each do |file|
-        unless File.basename(file)[0] == "_"
-          File.open(get_output(file), 'w') {|f| f.write(build_sass(file)) }
+      changed_files = paths.reject{ |f| File.basename(f)[0] == "_" }.map do |file|
+        css_file = get_output(file)
+        begin
+          File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
+          ::Guard::UI.info "-> rebuilt #{file}", :reset => true
+          css_file
+        rescue ::Sass::SyntaxError => e
+          ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
         end
-        puts "-> rebuilt #{file}"
+      end.compact
+      notify changed_files
+    end
+    
+    def notify(changed_files)
+      ::Guard.guards.each do |guard|
+        paths = Watcher.match_files(guard, changed_files)
+        guard.run_on_change paths unless paths.empty?
       end
     end
 
