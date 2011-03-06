@@ -59,10 +59,14 @@ module Guard
     def run_on_change(paths)
       changed_files = paths.reject{ |f| File.basename(f)[0] == "_" }.map do |file|
         css_file = get_output(file)
-        File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
-        ::Guard::UI.info "-> rebuilt #{file}", :reset => true
-        css_file
-      end
+        begin
+          File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
+          ::Guard::UI.info "-> rebuilt #{file}", :reset => true
+          css_file
+        rescue ::Sass::SyntaxError => e
+          ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
+        end
+      end.compact
       notify changed_files
     end
     
