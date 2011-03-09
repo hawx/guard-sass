@@ -1,5 +1,3 @@
-guard 'sass' do
-  watch('^sass/(.*)')
-  # watch('^_sass/(.*)')
-  # watch('^scss/(.*))
+guard 'sass', :output => 'public/css' do
+  watch(%r{^sass/.+\.(sass|scss)})
 end
