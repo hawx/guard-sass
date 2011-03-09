@@ -22,13 +22,13 @@ And finally add a basic setup to your Guardfile with:
 A guard extension that allows you to easily rebuild .sass (or .scss) files when changed.
 
     guard 'sass' do
-      watch('^sass/(.*)')
+      watch(%r{^sass/(.*)})
     end
 
 Defaults to writing to 'css/' but this can be changed....
 
     guard 'sass', :output => 'styles' do
-      watch('^sass/(.*)')
+      watch(%r{^sass/(.*)})
     end
 
 
