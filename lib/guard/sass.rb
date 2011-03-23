@@ -7,7 +7,7 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    VERSION = '0.0.6'
+    VERSION = '0.1.0'
     attr_accessor :options
     
     def initialize(watchers = [], options = {})
