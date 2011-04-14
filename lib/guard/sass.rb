@@ -71,7 +71,7 @@ module Guard
     end
     
     def notify(changed_files)
-      ::Guard.guards.each do |guard|
+      ::Guard.guards.reject{ |guard| guard == self }.each do |guard|
         paths = Watcher.match_files(guard, changed_files)
         guard.run_on_change paths unless paths.empty?
       end
