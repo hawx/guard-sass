@@ -62,9 +62,11 @@ module Guard
         begin
           File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
           ::Guard::UI.info "-> rebuilt #{file}", :reset => true
+          ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success)
           css_file
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
+          ::Guard::Notifier.notify("rebuild failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error)
         end
       end.compact
       notify changed_files
