@@ -12,6 +12,7 @@ describe Guard::Sass do
   describe "run all" do
     it "should rebuild all files being watched" do
       Guard::Sass.stub(:run_on_change).with([]).and_return([])
+      Guard.stub(:guards).and_return([subject])
       subject.run_all
     end
   end
@@ -53,6 +54,13 @@ EOS
 EOS
       
       subject.build_sass(file).should == res
+    end
+
+    it "should notify other guards upon completion" do
+      other_guard = mock('guard')
+      other_guard.should_receive(:watchers).and_return([])
+      Guard.stub(:guards).and_return([subject, other_guard])
+      subject.notify([])
     end
   end
   

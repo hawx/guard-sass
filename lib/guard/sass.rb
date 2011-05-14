@@ -13,6 +13,7 @@ module Guard
     def initialize(watchers = [], options = {})
       super(watchers, {
         :output => 'css',
+        :notifications => true,
         :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i)}
       }.merge(options))
     end
@@ -62,16 +63,18 @@ module Guard
         begin
           File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
           ::Guard::UI.info "-> rebuilt #{file}", :reset => true
+          ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if @options[:notifications]
           css_file
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
+          ::Guard::Notifier.notify("rebuild failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error) if @options[:notifications]
         end
       end.compact
       notify changed_files
     end
     
     def notify(changed_files)
-      ::Guard.guards.each do |guard|
+      ::Guard.guards.reject{ |guard| guard == self }.each do |guard|
         paths = Watcher.match_files(guard, changed_files)
         guard.run_on_change paths unless paths.empty?
       end
