@@ -35,3 +35,4 @@ Defaults to writing to 'css/' but this can be changed....
 ## Contributors
 
 - snappycode (http://github.com/snappycode)
+- sauliusg (http://github.com/sauliusg)
