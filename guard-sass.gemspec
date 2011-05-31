@@ -3,7 +3,7 @@ require File.expand_path("../lib/guard/sass/version", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'guard-sass'
-  s.version     = Guard::Sass::VERSION
+  s.version     = Guard::SassVersion::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Joshua Hawxwell']
   s.email       = ['m@hawx.me']

@@ -1,5 +1,5 @@
 module Guard
-  class Sass
-    VERSION = '0.1.1'
+  class SassVersion
+    VERSION = '0.1.3'
   end
 end
