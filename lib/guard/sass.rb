@@ -67,6 +67,7 @@ module Guard
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
           ::Guard::Notifier.notify("rebuild failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error) if @options[:notifications]
+          nil
         end
       end.compact
       notify changed_files
