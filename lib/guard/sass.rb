@@ -39,7 +39,12 @@ module Guard
     # @return [String] path to file where output should be written
     #
     def get_output(file)
-      folder = File.join ::Guard.listener.directory, @options[:output]
+      folder = if @options.has_key?(:root)
+        File.join ::Guard.listener.directory, @options[:root], @options[:output]
+      else
+        File.join ::Guard.listener.directory, @options[:output]
+      end
+      
       FileUtils.mkdir_p folder
       r = File.join folder, File.basename(file).split('.')[0]
       r << '.css'
