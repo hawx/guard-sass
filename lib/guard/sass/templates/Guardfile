@@ -1,8 +1,1 @@
-guard 'sass' do
-  watch(%r{^sass/.+\.s[ac]ss})
-end
-
-# # Optionally set output directory, defaults to 'css'
-# guard 'sass', :output => 'public/css' do
-#   watch(%r{^sass/.+\.s[ac]ss})
-# end
+guard 'sass', :input => 'sass', :output => 'css'
