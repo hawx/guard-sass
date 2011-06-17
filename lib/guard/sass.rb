@@ -7,14 +7,18 @@ require 'sass'
 module Guard
   class Sass < Guard
   
-    attr_accessor :options
+    DEFAULTS = {
+      :output => 'css',
+      :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
+    }
     
     def initialize(watchers = [], options = {})
-      super(watchers, {
-        :output => 'css',
-        :notifications => true,
-        :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i)}
-      }.merge(options))
+      if options[:input]
+        options[:output] = options[:input] unless options.has_key?(:output)
+        watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/.+\.s[ac]ss$})
+      end
+      
+      super(watchers, DEFAULTS.merge(options)
     end
         
             
@@ -39,12 +43,7 @@ module Guard
     # @return [String] path to file where output should be written
     #
     def get_output(file)
-      folder = if @options.has_key?(:root)
-        File.join ::Guard.listener.directory, @options[:root], @options[:output]
-      else
-        File.join ::Guard.listener.directory, @options[:output]
-      end
-      
+      folder = File.join ::Guard.listener.directory, @options[:output]
       FileUtils.mkdir_p folder
       r = File.join folder, File.basename(file).split('.')[0]
       r << '.css'
