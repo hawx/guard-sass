@@ -31,6 +31,11 @@ Defaults to writing to 'css/' but this can be changed....
       watch(%r{^sass/(.*)})
     end
 
+You can also specify a `:root` option to better mimic your app's directory structure...
+
+    guard 'sass', :output => 'public/stylesheets', :root => 'app/assets/stylesheets' do
+      watch(%r{^app/assets/stylesheets/.+\.s[ac]ss})
+    end
 
 ## Contributors
 
