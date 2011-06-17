@@ -19,7 +19,7 @@ module Guard
         watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/.+\.s[ac]ss$})
       end
       
-      super(watchers, DEFAULTS.merge(options)
+      super(watchers, DEFAULTS.merge(options))
     end
         
             
@@ -33,7 +33,7 @@ module Guard
       content = File.new(file).read
       # sass or scss?
       type = file[-4..-1].to_sym
-      engine = ::Sass::Engine.new(content, {:syntax => type, :load_paths => @options[:load_paths]})
+      engine = ::Sass::Engine.new(content, {:syntax => type, :load_paths => options[:load_paths]})
       engine.render
     end
     
@@ -44,7 +44,7 @@ module Guard
     # @return [String] path to file where output should be written
     #
     def get_output(file)
-      folder = File.join ::Guard.listener.directory, @options[:output]
+      folder = File.join ::Guard.listener.directory, options[:output]
       FileUtils.mkdir_p folder
       r = File.join folder, File.basename(file).split('.')[0]
       r << '.css'
@@ -67,11 +67,11 @@ module Guard
         begin
           File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
           ::Guard::UI.info "-> rebuilt #{file}", :reset => true
-          ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if @options[:notifications]
+          ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if options[:notification]
           css_file
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
-          ::Guard::Notifier.notify("rebuild failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error) if @options[:notifications]
+          ::Guard::Notifier.notify("rebuild failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error) if options[:notification]
           nil
         end
       end.compact
