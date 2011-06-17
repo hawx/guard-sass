@@ -9,6 +9,7 @@ module Guard
   
     DEFAULTS = {
       :output => 'css',
+      :notification => true,
       :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
     
