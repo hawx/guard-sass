@@ -23,25 +23,42 @@ And finally add a basic setup to your Guardfile with:
 
 ```ruby
 guard 'sass' do
-  watch(%r{^sass/.+\.s[ac]ss})
+  watch(%r{^sass/(.+\.s[ac]ss)})
 end
 ```
 
-Defaults to writing to 'css/' but this can be changed....
+Defaults to writing to 'css/' but this can be changed by setting the output option
 
 ```ruby
 guard 'sass', :output => 'styles' do
-  watch(%r{^sass/.+\.s[ac]ss})
+  watch(%r{^sass/(.+\.s[ac]ss)})
 end
 ```
+
+By default a file such as `sass/forms/buttons.sass` with the above guard file would be
+output to `styles/forms/buttons.css` because `forms` would be matched with the parentheses.
+This can be disabled by passing `:shallow => true` so that it would be written to
+`styles/buttons.css` instead.
 
 guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define 
 an input folder (with an optional output folder) and the watcher is defined for you.
 
 ```ruby
-guard 'sass', :input => 'sass', :output => 'css'
+guard 'sass', :input => 'sass', :output => 'styles'
 # or
 guard 'sass', :input => 'stylesheets'
+```
+
+These are equivelant to
+
+```ruby
+guard 'sass', :output => 'styles' do
+  watch %r{^sass/(.+\.s[ac]ss)$}
+end
+
+guard 'sass' do
+  watch %r{^stylesheets/(.+\.s[ac]ss)$}
+end
 ```
 
 
@@ -52,6 +69,8 @@ guard 'sass', :input => 'stylesheets'
 :output => 'css'                    # Relative path to the output directory
 :notification => false              # Whether to display notifications after finished,
                                     #  default: true
+:shallow => true                    # Whether to output nested directories or just put css
+                                    #  directly in output folder, default: false
 :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from,
                                     #  default: all directories under current
 ```
