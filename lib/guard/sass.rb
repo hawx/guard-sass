@@ -8,15 +8,16 @@ module Guard
   class Sass < Guard
   
     DEFAULTS = {
-      :output => 'css',
-      :notification => true,
+      :output => 'css',              # Output directory
+      :notification => true,         # Enable notifications?
+      :shallow  => false,            # Output nested directories?
       :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
     
     def initialize(watchers = [], options = {})
       if options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/.+\.s[ac]ss$})
+        watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/(.+\.s[ac]ss)$})
       end
       
       super(watchers, DEFAULTS.merge(options))
@@ -45,6 +46,18 @@ module Guard
     #
     def get_output(file)
       folder = File.join ::Guard.listener.directory, options[:output]
+        
+      unless options[:shallow]
+        watchers.product([file]).each do |watcher, file|
+          if matches = file.match(watcher.pattern)
+            if matches[1]
+              folder = File.join(::Guard.listener.directory, options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
+              break
+            end
+          end
+        end
+      end
+      
       FileUtils.mkdir_p folder
       r = File.join folder, File.basename(file).split('.')[0]
       r << '.css'
