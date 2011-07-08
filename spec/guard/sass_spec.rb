@@ -3,21 +3,13 @@ require 'spec_helper'
 describe Guard::Sass do
   subject { Guard::Sass.new }
   
-  describe "initialize" do
+  describe "#initialize" do
     it "should set default output path" do
       subject.options[:output].should == 'css'
     end
   end
   
-  describe "run all" do
-    it "should rebuild all files being watched" do
-      Guard::Sass.stub(:run_on_change).with([]).and_return([])
-      Guard.stub(:guards).and_return([subject])
-      subject.run_all
-    end
-  end
-  
-  describe "building sass to css" do
+  describe "#build_sass" do
     it "should convert sass to css" do
       file = "sass-test/_sass/screen.sass"
       
@@ -61,17 +53,9 @@ EOS
       
       subject.build_sass(file).should == res
     end
-
-    it "should notify other guards upon completion" do
-      other_guard = mock('guard')
-      other_guard.should_receive(:watchers).and_return([])
-      Guard.stub(:guards).and_return([subject, other_guard])
-      subject.notify([])
-    end
   end
   
-  describe "getting path to output file" do
-  
+  describe "#get_output" do
     before do
       m = mock("listener")
       m.stub!(:directory).and_return("sass-test")
@@ -97,5 +81,59 @@ EOS
     end
   end
   
+  describe "#ignored?" do
+    it "is true if file begins with _" do
+      subject.ignored?("some/dir/_file.sass").should be_true
+    end
+    
+    it "is false if file does not begin with _" do
+      subject.ignored?("some/dir/file.sass").should be_false
+    end
+  end
+  
+  describe "#run_all" do
+    it "should rebuild all files being watched" do
+      Guard::Sass.stub(:run_on_change).with([]).and_return([])
+      Guard.stub(:guards).and_return([subject])
+      subject.run_all
+    end
+  end
+  
+  describe "#run_on_change" do
+    before do
+      subject.stub!(:notify)
+      m = mock("listener")
+      m.stub!(:directory).and_return("sass-test")
+      ::Guard.stub(:listener).and_return(m)
+    end
+  
+    it "calls #run_all if partials changed" do
+      subject.should_receive(:run_all).and_return(nil)
+      subject.run_on_change(["some/_partial.sass"])
+    end
+    
+    it "builds the sass files" do
+      subject.should_receive(:build_sass).and_return("text")
+      File.any_instance.should_receive(:write).with("text")
+      subject.run_on_change(["some/file.sass"])
+    end
+    
+    it "displays warning if sass syntax error raised" do
+      subject.should_receive(:build_sass).and_raise(::Sass::SyntaxError.new('hio'))
+      ::Guard::UI.should_receive(:error)
+      ::Guard::Notifier.should_receive(:notify)
+      subject.run_on_change(["some/bad_file.sass"])
+    end
+  end
+  
+  describe "#notify" do
+    it "should notify other guards upon completion" do
+      other_guard = mock('guard')
+      other_guard.should_receive(:watchers).and_return([])
+      Guard.stub(:guards).and_return([subject, other_guard])
+      subject.notify([])
+    end
+  end
+
 end
 
