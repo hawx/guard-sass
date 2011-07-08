@@ -70,11 +70,14 @@ module Guard
     
     # Build all files being watched
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '*.*'))))
+      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.*'))))
     end
     
     # Build the files given
     def run_on_change(paths)
+      partials = paths.select { |f| File.basename(f)[0] == "_" }
+      return run_all unless partials.empty?
+
       changed_files = paths.reject{ |f| File.basename(f)[0] == "_" }.map do |file|
         css_file = get_output(file)
         begin
