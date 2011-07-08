@@ -63,6 +63,9 @@ module Guard
       r << '.css'
     end
     
+    def ignored?(path)
+      File.basename(path) == "_"
+    end
     
     # ================
     # = Guard method =
@@ -75,10 +78,10 @@ module Guard
     
     # Build the files given
     def run_on_change(paths)
-      partials = paths.select { |f| File.basename(f)[0] == "_" }
+      partials = paths.select { |f| ignored?(f) }
       return run_all unless partials.empty?
 
-      changed_files = paths.reject{ |f| File.basename(f)[0] == "_" }.map do |file|
+      changed_files = paths.reject{ |f| ignored?(f) }.map do |file|
         css_file = get_output(file)
         begin
           File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
