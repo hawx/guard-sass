@@ -22,6 +22,12 @@ describe Guard::Sass do
       file = "sass-test/_sass/screen.sass"
       
       res = <<EOS
+body {
+  color: red; }
+
+html {
+  color: blue; }
+
 .error, .badError {
   border: 1px red;
   background: #ffdddd; }
@@ -65,6 +71,13 @@ EOS
   end
   
   describe "getting path to output file" do
+  
+    before do
+      m = mock("listener")
+      m.stub!(:directory).and_return("sass-test")
+      ::Guard.stub(:listener).and_return(m)
+    end
+  
     it "should change extension to css" do
       subject.options[:output] = "css"
       r = subject.get_output("sass-test/_sass/screen.sass")
@@ -74,7 +87,7 @@ EOS
     it "should change the folder to /css (by default)" do
       subject.options[:output] = "css"
       r = subject.get_output("sass-test/_sass/screen.scss")
-      File.dirname(r).should == "sass-test/_sass/../css"
+      File.dirname(r).should == "sass-test/css"
     end
     
     it "should not change the file name" do
