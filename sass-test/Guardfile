@@ -1,0 +1,7 @@
+#guard 'sass' do
+#  watch %r{^sass/(.*)}
+#  watch %r{^_sass/(.*)}
+#  watch %r{^scss/(.*)}
+#end
+
+guard 'sass', :input => '_sass', :output => 'css'

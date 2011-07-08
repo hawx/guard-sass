@@ -1,0 +1,16 @@
+body {
+  color: red; }
+
+html {
+  color: blue; }
+
+.error, .badError {
+  border: 1px red;
+  background: #ffdddd; }
+
+.error.intrusion, .intrusion.badError {
+  font-size: 1.3em;
+  font-weight: bold; }
+
+.badError {
+  border-width: 3px; }
