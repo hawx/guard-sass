@@ -64,7 +64,7 @@ module Guard
     end
     
     def ignored?(path)
-      File.basename(path)[0] == "_"
+      File.basename(path)[0,1] == "_"
     end
     
     # ================
