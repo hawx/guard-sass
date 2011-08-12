@@ -71,6 +71,8 @@ end
                                     #  default: true
 :shallow => true                    # Whether to output nested directories or just put css
                                     #  directly in output folder, default: false
+:style => 'nested'                  # Controls the output style, by default 'nested'
+                                    #  accepted options: nested, compact, compressed and expanded
 :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from,
                                     #  default: all directories under current
 ```
@@ -78,8 +80,9 @@ end
 
 ## Contributors
 
-- snappycode (http://github.com/snappycode)
-- sauliusg (http://github.com/sauliusg)
+- snappycode (https://github.com/snappycode)
+- sauliusg (https://github.com/sauliusg)
+- eMxyzptlk (https://github.com/eMxyzptlk)
 
 
 
