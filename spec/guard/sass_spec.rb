@@ -7,6 +7,15 @@ describe Guard::Sass do
     it "should set default output path" do
       subject.options[:output].should == 'css'
     end
+
+    it "should set default style" do
+      subject.options[:style].should == 'nested'
+    end
+
+    it "should be able to set the style" do
+      gs = Guard::Sass.new(nil, {:style => 'compressed'})
+      gs.options[:style].should == 'compressed'
+    end
   end
   
   describe "#build_sass" do
@@ -70,13 +79,13 @@ EOS
     
     it "should change the folder to /css (by default)" do
       subject.options[:output] = "css"
-      r = subject.get_output("sass-test/_sass/screen.scss")
+      r = subject.get_output("sass-test/_sass/screen.sass")
       File.dirname(r).should == "sass-test/css"
     end
     
     it "should not change the file name" do
       subject.options[:output] = "csS"
-      r = subject.get_output("sass-test/_sass/screen.scss")
+      r = subject.get_output("sass-test/_sass/screen.sass")
       File.basename(r)[0..-5].should == "screen"
     end
   end
@@ -135,5 +144,98 @@ EOS
     end
   end
 
-end
+  describe "#styling" do
+    it "should be able to change the style" do
+      subject.options[:style] = 'compressed'
 
+      subject.options[:style].should == 'compressed'
+    end
+
+    it "should be nested by default" do
+      file = "sass-test/_sass/screen.sass"
+
+      res = <<-EOS
+body {
+  color: red; }
+
+html {
+  color: blue; }
+
+.error, .badError {
+  border: 1px red;
+  background: #ffdddd; }
+
+.error.intrusion, .intrusion.badError {
+  font-size: 1.3em;
+  font-weight: bold; }
+
+.badError {
+  border-width: 3px; }
+EOS
+
+      subject.build_sass(file).should == res
+    end
+
+    it "should accept compact" do
+      subject.options[:style] = 'compact'
+
+      file = "sass-test/_sass/screen.sass"
+
+      res = <<-EOS
+body { color: red; }
+
+html { color: blue; }
+
+.error, .badError { border: 1px red; background: #ffdddd; }
+
+.error.intrusion, .intrusion.badError { font-size: 1.3em; font-weight: bold; }
+
+.badError { border-width: 3px; }
+EOS
+
+      subject.build_sass(file).should == res
+    end
+
+    it "should accept compressed" do
+      subject.options[:style] = 'compressed'
+
+      file = "sass-test/_sass/screen.sass"
+
+      res = "body{color:red}html{color:blue}.error,.badError{border:1px red;background:#fdd}.error.intrusion,.intrusion.badError{font-size:1.3em;font-weight:bold}.badError{border-width:3px}\n"
+
+      subject.build_sass(file).should == res
+    end
+
+    it "should accept expanded" do
+      subject.options[:style] = 'expanded'
+
+      file = "sass-test/_sass/screen.sass"
+
+      res = <<-EOS
+body {
+  color: red;
+}
+
+html {
+  color: blue;
+}
+
+.error, .badError {
+  border: 1px red;
+  background: #ffdddd;
+}
+
+.error.intrusion, .intrusion.badError {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.badError {
+  border-width: 3px;
+}
+EOS
+
+      subject.build_sass(file).should == res
+    end
+  end
+end
