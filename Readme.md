@@ -78,12 +78,7 @@ end
 ```
 
 
-## Contributors
-
-- snappycode (https://github.com/snappycode)
-- sauliusg (https://github.com/sauliusg)
-- eMxyzptlk (https://github.com/eMxyzptlk)
-
+## [Contributors](https://github.com/hawx/guard-sass/contributors)
 
 
 [gcs]: http://github.com/netzpirat/guard-coffeescript "guard-coffeescript"
