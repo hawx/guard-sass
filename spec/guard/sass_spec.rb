@@ -9,7 +9,7 @@ describe Guard::Sass do
     end
 
     it "should set default style" do
-      subject.options[:style].should == 'nested'
+      subject.options[:style].should == :nested
     end
 
     it "should be able to set the style" do
@@ -146,9 +146,9 @@ EOS
 
   describe "#styling" do
     it "should be able to change the style" do
-      subject.options[:style] = 'compressed'
+      subject.options[:style] = :compressed
 
-      subject.options[:style].should == 'compressed'
+      subject.options[:style].should == :compressed
     end
 
     it "should be nested by default" do
@@ -177,7 +177,7 @@ EOS
     end
 
     it "should accept compact" do
-      subject.options[:style] = 'compact'
+      subject.options[:style] = :compact
 
       file = "sass-test/_sass/screen.sass"
 
@@ -197,7 +197,7 @@ EOS
     end
 
     it "should accept compressed" do
-      subject.options[:style] = 'compressed'
+      subject.options[:style] = :compressed
 
       file = "sass-test/_sass/screen.sass"
 
@@ -207,7 +207,7 @@ EOS
     end
 
     it "should accept expanded" do
-      subject.options[:style] = 'expanded'
+      subject.options[:style] = :expanded
 
       file = "sass-test/_sass/screen.sass"
 

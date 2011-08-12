@@ -71,8 +71,8 @@ end
                                     #  default: true
 :shallow => true                    # Whether to output nested directories or just put css
                                     #  directly in output folder, default: false
-:style => 'nested'                  # Controls the output style, by default 'nested'
-                                    #  accepted options: nested, compact, compressed and expanded
+:style => :nested                   # Controls the output style, by default :nested
+                                    #  accepted options are :nested, :compact, :compressed and :expanded
 :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from,
                                     #  default: all directories under current
 ```
