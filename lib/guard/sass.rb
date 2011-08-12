@@ -11,6 +11,7 @@ module Guard
       :output => 'css',              # Output directory
       :notification => true,         # Enable notifications?
       :shallow  => false,            # Output nested directories?
+      :style => 'nested',            # Nested output
       :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
     
@@ -34,7 +35,12 @@ module Guard
       content = File.new(file).read
       # sass or scss?
       type = file[-4..-1].to_sym
-      engine = ::Sass::Engine.new(content, {:syntax => type, :load_paths => options[:load_paths]})
+      sass_options = {
+        :syntax => type,
+        :load_paths => options[:load_paths],
+        :style => options[:style].to_sym,
+      }
+      engine = ::Sass::Engine.new(content, sass_options)
       engine.render
     end
     
