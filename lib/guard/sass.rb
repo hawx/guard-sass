@@ -12,6 +12,7 @@ module Guard
       :notification => true,         # Enable notifications?
       :shallow  => false,            # Output nested directories?
       :style => :nested,             # Nested output
+      :debug_info => false,          # File and line number info for FireSass
       :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
     
@@ -31,6 +32,7 @@ module Guard
     # @param file [String] path to file to build
     # @return [String] the output css
     #
+    
     def build_sass(file)
       content = File.new(file).read
       # sass or scss?
@@ -39,6 +41,7 @@ module Guard
         :syntax => type,
         :load_paths => options[:load_paths],
         :style => options[:style].to_sym,
+        :debug_info => options[:debug_info],
       }
       engine = ::Sass::Engine.new(content, sass_options)
       engine.render
