@@ -40,7 +40,7 @@ output to `styles/forms/buttons.css` because `forms` would be matched with the p
 This can be disabled by passing `:shallow => true` so that it would be written to
 `styles/buttons.css` instead.
 
-guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define 
+guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define
 an input folder (with an optional output folder) and the watcher is defined for you.
 
 ```ruby
@@ -75,6 +75,7 @@ end
                                     #  accepted options are :nested, :compact, :compressed and :expanded
 :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from,
                                     #  default: all directories under current
+:debug_info_ => true                # File and line number info for FireSass, default: false
 ```
 
 
