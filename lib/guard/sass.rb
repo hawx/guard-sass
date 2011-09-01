@@ -44,7 +44,13 @@ module Guard
         :debug_info => options[:debug_info],
       }
       engine = ::Sass::Engine.new(content, sass_options)
-      engine.render
+      
+      begin
+        engine.render
+      rescue ::Sass::SyntaxError => e
+        puts "ERROR: #{e.message}\n        on line #{e.sass_line} of #{e.sass_filename || file}"
+        nil
+      end
     end
     
     # Get the file path to output the css based on the file being 
@@ -93,9 +99,12 @@ module Guard
       changed_files = paths.reject{ |f| ignored?(f) }.map do |file|
         css_file = get_output(file)
         begin
-          File.open(css_file, 'w') {|f| f.write(build_sass(file)) }
-          ::Guard::UI.info "-> rebuilt #{file}", :reset => true
-          ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if options[:notification]
+          contents = build_sass(file)
+          if contents
+            File.open(css_file, 'w') {|f| f.write(contents) }
+            ::Guard::UI.info "-> rebuilt #{file}", :reset => true
+            ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if options[:notification]
+          end
           css_file
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
