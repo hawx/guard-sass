@@ -34,7 +34,6 @@ module Guard
     # @param file [String] path to file to build
     # @return [String] the output css
     #
-
     def build_sass(file)
       content = File.new(file).read
       # sass or scss?
@@ -92,7 +91,7 @@ module Guard
     def run_all
       run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.*'))))
     end
-
+    
     # Build the files given
     def run_on_change(paths)
       partials = paths.select { |f| ignored?(f) }
@@ -103,19 +102,22 @@ module Guard
         begin
           contents = build_sass(file)
           if contents
-            if options[:noop]
-              ::Guard::UI.info "-> verified #{file}", :reset => true
-              ::Guard::Notifier.notify("verified #{file}", :title => "Guard::Sass", :image => :success) if options[:notification] && !options[:hide_success]
-            else
-              File.open(css_file, 'w') {|f| f.write(contents) }
-              ::Guard::UI.info "-> rebuilt #{file}", :reset => true
-              ::Guard::Notifier.notify("rebuilt #{file}", :title => "Guard::Sass", :image => :success) if options[:notification] && !options[:hide_success]
+            message = options[:noop] ? "verified #{file}" : "rebuilt #{file}"
+            
+            File.open(css_file, 'w') {|f| f.write(contents) } unless options[:noop]
+            ::Guard::UI.info "-> #{message}", :reset => true
+            if options[:notification] && !options[:hide_success]
+              ::Guard::Notifier.notify(message, :title => "Guard::Sass", :image => :success)
             end
           end
           css_file
         rescue ::Sass::SyntaxError => e
           ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
-          ::Guard::Notifier.notify((options[:noop] ? 'validation' : 'rebuild') + " failed > #{e.sass_backtrace_str(file)}", :title => "Guard::Sass", :image => :error) if options[:notification]
+          ::Guard::Notifier.notify(
+            (options[:noop] ? 'validation' : 'rebuild') + " failed > #{e.sass_backtrace_str(file)}",
+             :title => "Guard::Sass",
+             :image => :error
+           ) if options[:notification]
           nil
         end
       end.compact
