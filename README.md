@@ -1,6 +1,6 @@
 # Guard-Sass
 
-guard-sass compiles your sass (and scss) files automatically when changed.
+guard-sass compiles or validates your sass (and scss) files automatically when changed.
 
 ## Install
 
@@ -20,47 +20,28 @@ And finally add a basic setup to your Guardfile with:
 
 ## Usage
 
-```ruby
-guard 'sass' do
-  watch(%r{^sass/(.+\.s[ac]ss)})
-end
-```
+Please read the [Guard usage documentation](https://github.com/guard/guard#readme).
 
-Defaults to writing to 'css/' but this can be changed by setting the output option
+## Guardfile
 
-```ruby
-guard 'sass', :output => 'styles' do
-  watch(%r{^sass/(.+\.s[ac]ss)})
-end
-```
+guard-sass can be adapted to all kind of projects. Please read the
+[Guard documentation](https://github.com/guard/guard#readme) for more information about the Guardfile DSL.
 
-By default a file such as `sass/forms/buttons.sass` with the above guard file would be
-output to `styles/forms/buttons.css` because `forms` would be matched with the parentheses.
-This can be disabled by passing `:shallow => true` so that it would be written to
-`styles/buttons.css` instead.
+### Ruby project
 
-guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define
-an input folder (with an optional output folder) and the watcher is defined for you.
+In a Ruby project you want to configure your input and output directories.
 
 ```ruby
 guard 'sass', :input => 'sass', :output => 'styles'
-# or
-guard 'sass', :input => 'stylesheets'
 ```
 
-These are equivalent to
+If your output directory is the same as the input directory, you can simply skip it:
 
 ```ruby
-guard 'sass', :output => 'styles' do
-  watch %r{^sass/(.+\.s[ac]ss)$}
-end
-
-guard 'sass' do
-  watch %r{^stylesheets/(.+\.s[ac]ss)$}
-end
+guard 'sass', :input => 'styles'
 ```
 
-### With the Rails asset pipeline
+### Rails app with the asset pipeline
 
 With the introduction of the [asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html)
 in Rails 3.1 there is no need to compile your Sass stylesheets with this Guard. However if you
@@ -80,6 +61,14 @@ success compilation message:
 guard 'sass', :input => 'app/assets/stylesheets', :noop => true, :hide_success => true
 ```
 
+### Rails app without the asset pipeline
+
+Without the asset pipeline you just define an input and output directory like within a normal Ruby project:
+
+```ruby
+guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
+```
+
 ## Options
 
 There following options can be passed to guard-sass:
@@ -90,7 +79,7 @@ There following options can be passed to guard-sass:
                                     # default: nil
 
 :output => 'css'                    # Relative path to the output directory.
-                                    # default: the path given with the :input option
+                                    # default: 'css' or the :input option when supplied
 
 :notification => false              # Whether to display success and error notifications after finished.
                                     # default: true
@@ -115,8 +104,104 @@ There following options can be passed to guard-sass:
                                     # default: false
 ```
 
+### Output short notation
 
-## [Contributors](https://github.com/hawx/guard-sass/contributors)
+guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define
+an input folder (with an optional output folder) and the watcher is defined for you.
 
+```ruby
+guard 'sass', :input => 'sass', :output => 'styles'
+# or
+guard 'sass', :input => 'stylesheets'
+```
 
-[gcs]: http://github.com/netzpirat/guard-coffeescript "guard-coffeescript"
+These are equivalent to
+
+```ruby
+guard 'sass', :output => 'styles' do
+  watch %r{^sass/(.+\.s[ac]ss)$}
+end
+
+guard 'sass' do
+  watch %r{^stylesheets/(.+\.s[ac]ss)$}
+end
+```
+
+### Nested directories
+
+The Guard detects by default nested directories and creates these within the output directory.
+The detection is based on the match of the watch regular expression:
+
+A file
+
+```bash
+/app/stylesheets/form/button.sass
+```
+
+that has been detected by the watch
+
+```ruby
+watch(%r{^app/stylesheets/(.+\.s[ac]ss)$})
+```
+
+with an output directory of
+
+```ruby
+:output => 'public/stylesheets'
+```
+
+will be compiled to
+
+```bash
+public/stylesheets/form/button.css
+```
+
+Note the parenthesis around the `.+\.s[ac]ss`. This enables guard-sass to place the full
+path that was matched inside the parenthesis into the proper output directory.
+
+This behavior can be switched off by passing the option `:shallow => true` to the Guard, so that
+all stylesheets will be compiled directly to the output directory.
+
+## Development
+
+- Source hosted at [GitHub](https://github.com/hawx/guard-sass)
+- Report issues and feature requests to [GitHub Issues](https://github.com/hawx/guard-sass/issues)
+
+Pull requests are very welcome!
+
+For questions please join us on our [Google group](http://groups.google.com/group/guard-dev) or
+on `#guard` (irc.freenode.net).
+
+## Contributors
+
+Have a look at the [GitHub contributor](https://github.com/hawx/guard-sass/contributors) list to
+see all contributors.
+
+Since this Guard is very close to [guard-coffeescript](http://github.com/netzpirat/guard-coffeescript),
+some features have been incorporated into guard-sass.
+
+## License
+
+(The MIT License)
+
+Copyright (c) 2010 - 2011 Joshua Hawxwell
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
