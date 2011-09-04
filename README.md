@@ -1,10 +1,12 @@
 # Guard-Sass
 
-guard-sass compiles or validates your sass (and scss) files automatically when changed.
+guard-sass compiles or validates your sass (and scss) files automatically when 
+changed.
 
 ## Install
 
-You will need to have [guard](http://github.com/guard/guard) to continue, so install it now!
+You will need to have [guard](http://github.com/guard/guard) to continue, so 
+install it now!
 
 Install the gem with:
 
@@ -43,27 +45,32 @@ guard 'sass', :input => 'styles'
 
 ### Rails app with the asset pipeline
 
-With the introduction of the [asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html)
-in Rails 3.1 there is no need to compile your Sass stylesheets with this Guard. However if you
-like to have instant validation feedback (preferably with a Growl notification) directly after
-you save a change, then you may want still use this Guard and just skip the generation of the
-output file:
+With the introduction of the [asset pipeline][rpipe] in Rails 3.1 there is no 
+need to compile your Sass stylesheets with this Guard. However, if you would 
+still like to have feedback on the validation of your stylesheets (preferably 
+with a Growl notification) directly after you save a change, then you can still 
+use this Guard and simply skip generation of the output file:
 
 ```ruby
 guard 'sass', :input => 'app/assets/stylesheets', :noop => true
 ```
 
-This give you a faster compilation feedback compared to making a subsequent request to your
-Rails application. If you just want to be notified when an error occurs you can hide the
-success compilation message:
+This gives you (almost) immediate feedback on whether the changes made are valid, 
+and is much faster than making a subsequent request to your Rails application. 
+If you just want to be notified when an error occurs you can hide the success 
+compilation message:
 
 ```ruby
-guard 'sass', :input => 'app/assets/stylesheets', :noop => true, :hide_success => true
+guard 'sass', 
+  :input => 'app/assets/stylesheets', 
+  :noop => true, 
+  :hide_success => true
 ```
 
 ### Rails app without the asset pipeline
 
-Without the asset pipeline you just define an input and output directory like within a normal Ruby project:
+Without the asset pipeline you just define an input and output directory as in
+a normal Ruby project:
 
 ```ruby
 guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
@@ -71,7 +78,7 @@ guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
 
 ## Options
 
-There following options can be passed to guard-sass:
+The following options can be passed to guard-sass:
 
 ```ruby
 :input => 'sass'                    # Relative path to the input directory.
@@ -81,7 +88,7 @@ There following options can be passed to guard-sass:
 :output => 'css'                    # Relative path to the output directory.
                                     # default: 'css' or the :input option when supplied
 
-:notification => false              # Whether to display success and error notifications after finished.
+:notification => false              # Whether to display success and error notifications.
                                     # default: true
 
 :hide_success => true               # Disable successful compilation messages.
@@ -90,8 +97,8 @@ There following options can be passed to guard-sass:
 :shallow => true                    # Do not create nested output directories.
                                     # default: false
 
-:style => :nested                   # Controls the output style.
-                                    # Accepted options are :nested, :compact, :compressed and :expanded
+:style => :nested                   # Controls the output style. Accepted options are :nested, 
+                                    # :compact, :compressed and :expanded
                                     # default: :nested
 
 :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
@@ -106,8 +113,9 @@ There following options can be passed to guard-sass:
 
 ### Output short notation
 
-guard-sass also has a short notation like [guard-coffeescript][gcs], this let's you define
-an input folder (with an optional output folder) and the watcher is defined for you.
+guard-sass also has a short notation like [guard-coffeescript][gcs], this lets 
+you define an input folder (with an optional output folder) automatically creating
+the required watcher.
 
 ```ruby
 guard 'sass', :input => 'sass', :output => 'styles'
@@ -129,12 +137,15 @@ end
 
 ### Nested directories
 
-The Guard detects by default nested directories and creates these within the output directory.
-The detection is based on the match of the watch regular expression:
+By default the guard detects nested directories and writes files into the output
+directory with the same structure.
+
+The Guard detects by default nested directories and creates these within the 
+output directory. The detection is based on the match of the watch regular expression:
 
 A file
 
-```bash
+```
 /app/stylesheets/form/button.sass
 ```
 
@@ -152,33 +163,33 @@ with an output directory of
 
 will be compiled to
 
-```bash
+```
 public/stylesheets/form/button.css
 ```
 
-Note the parenthesis around the `.+\.s[ac]ss`. This enables guard-sass to place the full
-path that was matched inside the parenthesis into the proper output directory.
+Note the parenthesis around `.+\.s[ac]ss`. This enables guard-sass to place 
+the full path that was matched inside the parenthesis into the proper output directory.
 
-This behavior can be switched off by passing the option `:shallow => true` to the Guard, so that
-all stylesheets will be compiled directly to the output directory.
+This behaviour can be switched off by passing the option `:shallow => true` to the 
+Guard, so that all stylesheets will be compiled directly to the output directory.
+So the previous example would have compiled to `public/stylesheets/button.css`.
 
 ## Development
 
 - Source hosted at [GitHub](https://github.com/hawx/guard-sass)
-- Report issues and feature requests to [GitHub Issues](https://github.com/hawx/guard-sass/issues)
+- Report issues and feature requests to [GitHub Issues][issues]
 
 Pull requests are very welcome!
 
-For questions please join us on our [Google group](http://groups.google.com/group/guard-dev) or
+For questions please join us on our [Google group][ggroup] or
 on `#guard` (irc.freenode.net).
 
 ## Contributors
 
-Have a look at the [GitHub contributor](https://github.com/hawx/guard-sass/contributors) list to
-see all contributors.
+Have a look at the [GitHub contributor][contrib] list to see all contributors.
 
-Since this Guard is very close to [guard-coffeescript][gcs],
-some features have been incorporated into guard-sass.
+Since this Guard is very close to [guard-coffeescript][gcs], some features have been 
+incorporated into guard-sass.
 
 ## License
 
@@ -205,5 +216,10 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-[gcs]: http://github.com/netzpirat/guard-coffeescript "guard-coffeescript"
-[gdoc]: https://github.com/guard/guard#readme
+
+[gcs]:     http://github.com/netzpirat/guard-coffeescript
+[gdoc]:    http://github.com/guard/guard#readme
+[rpipe]:   http://guides.rubyonrails.org/asset_pipeline.html
+[issues]:  http://github.com/hawx/guard-sass/issues
+[ggroup]:  http://groups.google.com/group/guard-dev
+[contrib]: http://github.com/hawx/guard-sass/contributors
