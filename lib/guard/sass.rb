@@ -44,14 +44,8 @@ module Guard
         :style => options[:style].to_sym,
         :debug_info => options[:debug_info],
       }
-      engine = ::Sass::Engine.new(content, sass_options)
-
-      begin
-        engine.render
-      rescue ::Sass::SyntaxError => e
-        puts "ERROR: #{e.message}\n        on line #{e.sass_line} of #{e.sass_filename || file}"
-        nil
-      end
+      
+      ::Sass::Engine.new(content, sass_options).render
     end
 
     # Get the file path to output the css based on the file being
