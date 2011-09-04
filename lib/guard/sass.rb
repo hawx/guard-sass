@@ -8,14 +8,14 @@ module Guard
   class Sass < Guard
 
     DEFAULTS = {
-      :output => 'css',              # Output directory
-      :notification => true,         # Enable notifications?
-      :shallow  => false,            # Output nested directories?
-      :style => :nested,             # Nested output
-      :debug_info => false,          # File and line number info for FireSass
-      :noop => false,                # Do no write output file
-      :hide_success => false,        # Do not show success message
-      :load_paths => Dir.glob('**/**').find_all {|i| File.directory?(i) }
+      :output       => 'css',     # Output directory
+      :notification => true,      # Enable notifications?
+      :shallow      => false,     # Output nested directories?
+      :style        => :nested,   # Nested output
+      :debug_info   => false,     # File and line number info for FireSass
+      :noop         => false,     # Do no write output file
+      :hide_success => false,     # Do not show success message
+      :load_paths   => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
 
     def initialize(watchers = [], options = {})
