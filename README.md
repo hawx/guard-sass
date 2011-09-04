@@ -4,7 +4,7 @@ guard-sass compiles your sass (and scss) files automatically when changed.
 
 ## Install
 
-You will need to have [guard](http://github.com/guard/guard) to continue, so install it now!.
+You will need to have [guard](http://github.com/guard/guard) to continue, so install it now!
 
 Install the gem with:
 
@@ -17,7 +17,6 @@ Add it to your Gemfile:
 And finally add a basic setup to your Guardfile with:
 
     guard init sass
-
 
 ## Usage
 
@@ -49,7 +48,7 @@ guard 'sass', :input => 'sass', :output => 'styles'
 guard 'sass', :input => 'stylesheets'
 ```
 
-These are equivelant to
+These are equivalent to
 
 ```ruby
 guard 'sass', :output => 'styles' do
@@ -61,21 +60,59 @@ guard 'sass' do
 end
 ```
 
+### With the Rails asset pipeline
+
+With the introduction of the [asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html)
+in Rails 3.1 there is no need to compile your Sass stylesheets with this Guard. However if you
+like to have instant validation feedback (preferably with a Growl notification) directly after
+you save a change, then you may want still use this Guard and just skip the generation of the
+output file:
+
+```ruby
+guard 'sass', :input => 'app/assets/stylesheets', :noop => true
+```
+
+This give you a faster compilation feedback compared to making a subsequent request to your
+Rails application. If you just want to be notified when an error occurs you can hide the
+success compilation message:
+
+```ruby
+guard 'sass', :input => 'app/assets/stylesheets', :noop => true, :hide_success => true
+```
 
 ## Options
 
+There following options can be passed to guard-sass:
+
 ```ruby
-:input => 'sass'                    # Relative path to the input directory
-:output => 'css'                    # Relative path to the output directory
-:notification => false              # Whether to display notifications after finished,
-                                    #  default: true
-:shallow => true                    # Whether to output nested directories or just put css
-                                    #  directly in output folder, default: false
-:style => :nested                   # Controls the output style, by default :nested
-                                    #  accepted options are :nested, :compact, :compressed and :expanded
-:load_paths => ['sass/partials']    # Paths for sass to find imported sass files from,
-                                    #  default: all directories under current
-:debug_info_ => true                # File and line number info for FireSass, default: false
+:input => 'sass'                    # Relative path to the input directory.
+                                    # A suffix `/(.+\.s[ac]ss)` will be added to this option.
+                                    # default: nil
+
+:output => 'css'                    # Relative path to the output directory.
+                                    # default: the path given with the :input option
+
+:notification => false              # Whether to display success and error notifications after finished.
+                                    # default: true
+
+:hide_success => true               # Disable successful compilation messages.
+                                    # default: false
+
+:shallow => true                    # Do not create nested output directories.
+                                    # default: false
+
+:style => :nested                   # Controls the output style.
+                                    # Accepted options are :nested, :compact, :compressed and :expanded
+                                    # default: :nested
+
+:load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
+                                    # default: all directories under current
+
+:noop => true                       # No operation: Do not write output file
+                                    # default: false
+
+:debug_info_ => true                # File and line number info for FireSass.
+                                    # default: false
 ```
 
 
