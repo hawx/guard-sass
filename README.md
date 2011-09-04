@@ -20,12 +20,12 @@ And finally add a basic setup to your Guardfile with:
 
 ## Usage
 
-Please read the [Guard usage documentation](https://github.com/guard/guard#readme).
+Please read the [Guard usage documentation][gdoc].
 
 ## Guardfile
 
 guard-sass can be adapted to all kind of projects. Please read the
-[Guard documentation](https://github.com/guard/guard#readme) for more information about the Guardfile DSL.
+[Guard documentation][gdoc] for more information about the Guardfile DSL.
 
 ### Ruby project
 
@@ -177,7 +177,7 @@ on `#guard` (irc.freenode.net).
 Have a look at the [GitHub contributor](https://github.com/hawx/guard-sass/contributors) list to
 see all contributors.
 
-Since this Guard is very close to [guard-coffeescript](http://github.com/netzpirat/guard-coffeescript),
+Since this Guard is very close to [guard-coffeescript][gcs],
 some features have been incorporated into guard-sass.
 
 ## License
@@ -205,3 +205,5 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+[gcs]: http://github.com/netzpirat/guard-coffeescript "guard-coffeescript"
+[gdoc]: https://github.com/guard/guard#readme
