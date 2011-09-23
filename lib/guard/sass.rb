@@ -61,7 +61,7 @@ module Guard
         watchers.product([file]).each do |watcher, file|
           if matches = file.match(watcher.pattern)
             if matches[1]
-              folder = File.join(::Guard.listener.directory, options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
+              folder = File.join(options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
               break
             end
           end
@@ -96,7 +96,7 @@ module Guard
         begin
           contents = build_sass(file)
           if contents
-            message = options[:noop] ? "verified #{file}" : "rebuilt #{file}"
+            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
             
             File.open(css_file, 'w') {|f| f.write(contents) } unless options[:noop]
             ::Guard::UI.info "-> #{message}", :reset => true
