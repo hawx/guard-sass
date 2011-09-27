@@ -6,6 +6,8 @@ require 'sass'
 
 module Guard
   class Sass < Guard
+  
+    autoload :Formatter, 'guard/sass/formatter'
 
     DEFAULTS = {
       :output       => 'css',     # Output directory
@@ -23,8 +25,15 @@ module Guard
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/(.+\.s[ac]ss)$})
       end
+      
+      options = DEFAULTS.merge(options)
+      
+      @formatter = Formatter.new(
+        :notification => options[:notification], 
+        :show_success => !options[:hide_success]
+      )
 
-      super(watchers, DEFAULTS.merge(options))
+      super(watchers, options)
     end
 
 
@@ -83,43 +92,41 @@ module Guard
 
     # Build all files being watched
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.*'))))
+      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.s[ac]ss'))))
     end
     
     # Build the files given
     def run_on_change(paths)
-      partials = paths.select { |f| ignored?(f) }
+      partials = paths.select {|f| ignored?(f) }
       return run_all unless partials.empty?
 
-      changed_files = paths.reject{ |f| ignored?(f) }.map do |file|
+      changed_files = paths.reject {|f| ignored?(f) }.map do |file|
         css_file = get_output(file)
         begin
           contents = build_sass(file)
           if contents
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
-            
             File.open(css_file, 'w') {|f| f.write(contents) } unless options[:noop]
-            ::Guard::UI.info "-> #{message}", :reset => true
-            if options[:notification] && !options[:hide_success]
-              ::Guard::Notifier.notify(message, :title => "Guard::Sass", :image => :success)
-            end
+            
+            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
+            @formatter.success("-> #{message}", :notification => message)
           end
           css_file
         rescue ::Sass::SyntaxError => e
-          ::Guard::UI.error "Sass > #{e.sass_backtrace_str(file)}"
-          ::Guard::Notifier.notify(
-            (options[:noop] ? 'validation' : 'rebuild') + " failed > #{e.sass_backtrace_str(file)}",
-             :title => "Guard::Sass",
-             :image => :error
-           ) if options[:notification]
+          @formatter.error(
+            "Sass > #{e.sass_backtrace_str(file)}", 
+            :notification => (options[:noop] ? 'validation' : 'rebuild') + " of #{file} failed"
+          )
+          
           nil
         end
       end.compact
+      
       notify changed_files
     end
 
     def notify(changed_files)
-      ::Guard.guards.reject{ |guard| guard == self }.each do |guard|
+      ::Guard.guards.each do |guard|
+        next if guard == self
         paths = Watcher.match_files(guard, changed_files)
         guard.run_on_change paths unless paths.empty?
       end
