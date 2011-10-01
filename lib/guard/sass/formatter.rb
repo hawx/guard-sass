@@ -31,7 +31,7 @@ module Guard
       # @param opts [Hash]
       def error(msg, opts={})
         ::Guard::UI.error(msg, opts)
-        notify(opts[:notification], :image => :success) 
+        notify(opts[:notification], :image => :failed) 
       end
       
       # Show a system notification, if notifications are enabled.
