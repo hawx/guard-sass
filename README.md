@@ -33,15 +33,11 @@ guard-sass can be adapted to all kind of projects. Please read the
 
 In a Ruby project you want to configure your input and output directories.
 
-```ruby
-guard 'sass', :input => 'sass', :output => 'styles'
-```
+    guard 'sass', :input => 'sass', :output => 'styles'
 
 If your output directory is the same as the input directory, you can simply skip it:
 
-```ruby
-guard 'sass', :input => 'styles'
-```
+    guard 'sass', :input => 'styles'
 
 ### Rails app with the asset pipeline
 
@@ -51,65 +47,57 @@ still like to have feedback on the validation of your stylesheets (preferably
 with a Growl notification) directly after you save a change, then you can still 
 use this Guard and simply skip generation of the output file:
 
-```ruby
-guard 'sass', :input => 'app/assets/stylesheets', :noop => true
-```
+    guard 'sass', :input => 'app/assets/stylesheets', :noop => true
 
 This gives you (almost) immediate feedback on whether the changes made are valid, 
 and is much faster than making a subsequent request to your Rails application. 
 If you just want to be notified when an error occurs you can hide the success 
 compilation message:
 
-```ruby
-guard 'sass', 
-  :input => 'app/assets/stylesheets', 
-  :noop => true, 
-  :hide_success => true
-```
+    guard 'sass', 
+      :input => 'app/assets/stylesheets', 
+      :noop => true, 
+      :hide_success => true
 
 ### Rails app without the asset pipeline
 
 Without the asset pipeline you just define an input and output directory as in
 a normal Ruby project:
 
-```ruby
-guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
-```
+    guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
 
 ## Options
 
 The following options can be passed to guard-sass:
 
-```ruby
-:input => 'sass'                    # Relative path to the input directory.
-                                    # A suffix `/(.+\.s[ac]ss)` will be added to this option.
-                                    # default: nil
-
-:output => 'css'                    # Relative path to the output directory.
-                                    # default: 'css' or the :input option when supplied
-
-:notification => false              # Whether to display success and error notifications.
-                                    # default: true
-
-:hide_success => true               # Disable successful compilation messages.
-                                    # default: false
-
-:shallow => true                    # Do not create nested output directories.
-                                    # default: false
-
-:style => :nested                   # Controls the output style. Accepted options are :nested, 
-                                    # :compact, :compressed and :expanded
-                                    # default: :nested
-
-:load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
-                                    # default: all directories under current
-
-:noop => true                       # No operation: Do not write output file
-                                    # default: false
-
-:debug_info_ => true                # File and line number info for FireSass.
-                                    # default: false
-```
+    :input => 'sass'                    # Relative path to the input directory.
+                                        # A suffix `/(.+\.s[ac]ss)` will be added to this option.
+                                        # default: nil
+    
+    :output => 'css'                    # Relative path to the output directory.
+                                        # default: 'css' or the :input option when supplied
+    
+    :notification => false              # Whether to display success and error notifications.
+                                        # default: true
+    
+    :hide_success => true               # Disable successful compilation messages.
+                                        # default: false
+    
+    :shallow => true                    # Do not create nested output directories.
+                                        # default: false
+    
+    :style => :nested                   # Controls the output style. Accepted options are :nested, 
+                                        # :compact, :compressed and :expanded
+                                        # default: :nested
+    
+    :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
+                                        # default: all directories under current
+    
+    :noop => true                       # No operation: Do not write output file
+                                        # default: false
+    
+    :debug_info_ => true                # File and line number info for FireSass.
+                                        # default: false
 
 ### Output short notation
 
@@ -117,23 +105,19 @@ guard-sass also has a short notation like [guard-coffeescript][gcs], this lets
 you define an input folder (with an optional output folder) automatically creating
 the required watcher.
 
-```ruby
-guard 'sass', :input => 'sass', :output => 'styles'
-# or
-guard 'sass', :input => 'stylesheets'
-```
+    guard 'sass', :input => 'sass', :output => 'styles'
+    # or
+    guard 'sass', :input => 'stylesheets'
 
 These are equivalent to
 
-```ruby
-guard 'sass', :output => 'styles' do
-  watch %r{^sass/(.+\.s[ac]ss)$}
-end
-
-guard 'sass' do
-  watch %r{^stylesheets/(.+\.s[ac]ss)$}
-end
-```
+    guard 'sass', :output => 'styles' do
+      watch %r{^sass/(.+\.s[ac]ss)$}
+    end
+    
+    guard 'sass' do
+      watch %r{^stylesheets/(.+\.s[ac]ss)$}
+    end
 
 ### Nested directories
 
@@ -145,27 +129,19 @@ output directory. The detection is based on the match of the watch regular expre
 
 A file
 
-```
-/app/stylesheets/form/button.sass
-```
+    /app/stylesheets/form/button.sass
 
 that has been detected by the watch
 
-```ruby
-watch(%r{^app/stylesheets/(.+\.s[ac]ss)$})
-```
+    watch(%r{^app/stylesheets/(.+\.s[ac]ss)$})
 
 with an output directory of
 
-```ruby
-:output => 'public/stylesheets'
-```
+    :output => 'public/stylesheets'
 
 will be compiled to
 
-```
-public/stylesheets/form/button.css
-```
+    public/stylesheets/form/button.css
 
 Note the parenthesis around `.+\.s[ac]ss`. This enables guard-sass to place 
 the full path that was matched inside the parenthesis into the proper output directory.
