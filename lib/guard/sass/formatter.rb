@@ -1,6 +1,7 @@
 module Guard
   class Sass
   
+    # The formatter handles providing output to the user.
     class Formatter
 
       # @param opts [Hash]
@@ -19,7 +20,7 @@ module Guard
       # @param opts [Hash]
       def success(msg, opts={})
         if @success
-          ::Guard::UI.info(msg, ({:reset => true}).merge(opts))      
+          ::Guard::UI.info(msg, opts)      
           notify(opts[:notification], :image => :success)
         end
       end
@@ -29,8 +30,8 @@ module Guard
       # @param msg [String]
       # @param opts [Hash]
       def error(msg, opts={})
-        ::Guard::UI.error(msg, ({:reset => true}).merge(opts))
-        notify(opts[:notification], :image => :failed) 
+        ::Guard::UI.error(msg, opts)
+        notify(opts[:notification], :image => :success) 
       end
       
       # Show a system notification, if notifications are enabled.

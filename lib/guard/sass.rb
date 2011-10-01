@@ -66,7 +66,7 @@ module Guard
     # 
     # @param paths [Array<String>]
     # @return [Boolean] No errors?
-    def run_on_change(paths)
+    def run_on_change(paths)   
       partials = paths.select {|f| File.basename(f)[0,1] == "_" }
       return run_all unless partials.empty?
       
