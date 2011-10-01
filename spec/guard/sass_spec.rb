@@ -63,16 +63,6 @@ describe Guard::Sass do
     end
     
   end
-  
-  describe '#ignored?' do
-    it 'is true if file begins with underscore' do
-      subject.ignored?('some/_file.sass').should be_true
-    end
-    
-    it 'is false if file does not begin with underscore' do
-      subject.ignored?('_some/file.sass').should be_false
-    end
-  end
 
   describe '#run_all' do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
@@ -117,6 +107,7 @@ describe Guard::Sass do
       dummy_guard = mock(Guard::Guard)
       ::Guard.stub(:guards).and_return([dummy_guard, subject])
       
+      Guard::Watcher.stub(:match_files).with(subject, ['a.css']).and_return([])
       Guard::Watcher.stub(:match_files).with(dummy_guard, ['a.css']).and_return(['a.css'])
       subject.should_not_receive(:run_on_change)
       dummy_guard.should_receive(:run_on_change).with(['a.css'])

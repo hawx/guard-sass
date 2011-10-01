@@ -23,7 +23,13 @@ describe Guard::Sass::Runner do
     
     context 'if errors when compiling' do
       subject { Guard::Sass::Runner.new([watcher], defaults) }
-      before { IO.stub(:read).and_return('body { color: red;') }
+      
+      before do
+        $_stderr, $stderr = $stderr, StringIO.new
+        IO.stub(:read).and_return('body { color: red;')
+      end
+  
+      after { $stderr = $_stderr }
       
       it 'shows a warning message' do
         formatter.should_receive(:error).with('Sass > Syntax error: Invalid CSS after "body ": expected selector, was "{ color: red;"

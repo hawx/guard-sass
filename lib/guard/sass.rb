@@ -76,8 +76,6 @@ module Guard
       success
     end
     
-    private
-    
     # Notify other guards about files that have been changed so that other guards can
     # work on the changed files.
     #
