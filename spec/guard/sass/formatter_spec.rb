@@ -10,7 +10,7 @@ describe Guard::Sass::Formatter do
   describe '#success' do
     context 'if success is to be shown' do
       it 'shows a success message' do
-        ui.should_receive(:info).with("Success message", :reset => true)
+        ui.should_receive(:info).with("Success message", {})
         subject.new.success("Success message")
       end
       
@@ -31,7 +31,7 @@ describe Guard::Sass::Formatter do
   
   describe '#error' do
     it 'shows an error message' do
-      ui.should_receive(:error).with("Error message", :reset => true)
+      ui.should_receive(:error).with("Error message", {})
       subject.new.error("Error message")
     end
     
