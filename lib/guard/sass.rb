@@ -2,88 +2,52 @@ require 'guard'
 require 'guard/guard'
 require 'guard/watcher'
 
-require 'sass'
-
 module Guard
   class Sass < Guard
   
+    autoload :Runner,    'guard/sass/runner'
     autoload :Formatter, 'guard/sass/formatter'
 
     DEFAULTS = {
-      :output       => 'css',     # Output directory
-      :notification => true,      # Enable notifications?
-      :shallow      => false,     # Output nested directories?
-      :style        => :nested,   # Nested output
-      :debug_info   => false,     # File and line number info for FireSass
-      :noop         => false,     # Do no write output file
-      :hide_success => false,     # Do not show success message
+      :output       => 'css',
+      :style        => :nested,
+      :notification => true,
+      :shallow      => false,
+      :debug_info   => false,
+      :noop         => false,
+      :hide_success => false,
       :load_paths   => Dir.glob('**/**').find_all {|i| File.directory?(i) }
     }
 
-    def initialize(watchers = [], options = {})
+    # @param watchers [Array<Guard::Watcher>]
+    # @param options [Hash]
+    # @option options [String] :input
+    #   The input directory
+    # @option options [String] :output 
+    #   The output directory
+    # @option options [Array<String>] :load_paths
+    #   List of directories you can @import from 
+    # @option options [Boolean] :notification 
+    #   Whether to show notifications
+    # @option options [Boolean] :shallow 
+    #   Whether to output nested directories
+    # @option options [Boolean] :debug_info
+    #   Whether to output file and line number info for FireSass
+    # @option options [Boolean] :noop
+    #   Whether to run in "asset pipe" mode, no ouput, just validation
+    # @option options [Boolean] :hide_success
+    #   Whether to hide all success messages
+    # @option options [Symbol] :style
+    #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
+    def initialize(watchers=[], options={})
       if options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/(.+\.s[ac]ss)$})
       end
       
       options = DEFAULTS.merge(options)
-      
-      @formatter = Formatter.new(
-        :notification => options[:notification], 
-        :show_success => !options[:hide_success]
-      )
-
+      @runner = Runner.new(watchers, options)
       super(watchers, options)
-    end
-
-
-    # Builds the sass or scss. Determines engine to use by extension
-    # of path given.
-    #
-    # @param file [String] path to file to build
-    # @return [String] the output css
-    #
-    def build_sass(file)
-      content = File.new(file).read
-      # sass or scss?
-      type = file[-4..-1].to_sym
-      sass_options = {
-        :syntax => type,
-        :load_paths => options[:load_paths],
-        :style => options[:style].to_sym,
-        :debug_info => options[:debug_info],
-      }
-      
-      ::Sass::Engine.new(content, sass_options).render
-    end
-
-    # Get the file path to output the css based on the file being
-    # built.
-    #
-    # @param file [String] path to file being built
-    # @return [String] path to file where output should be written
-    #
-    def get_output(file)
-      folder = File.join ::Guard.listener.directory, options[:output]
-
-      unless options[:shallow]
-        watchers.product([file]).each do |watcher, file|
-          if matches = file.match(watcher.pattern)
-            if matches[1]
-              folder = File.join(options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
-              break
-            end
-          end
-        end
-      end
-
-      FileUtils.mkdir_p folder
-      r = File.join folder, File.basename(file).split('.')[0]
-      r << '.css'
-    end
-
-    def ignored?(path)
-      File.basename(path)[0,1] == "_"
     end
 
     # ================
@@ -91,44 +55,37 @@ module Guard
     # ================
 
     # Build all files being watched
+    #
+    # @return [Boolean] No errors?
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.s[ac]ss'))))
+      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '*.*'))))
     end
     
-    # Build the files given
+    # Build the files given. If a 'partial' file is found (begins with '_') calls
+    # {#run_all} as we don't know which other files need to use it.
+    # 
+    # @param paths [Array<String>]
+    # @return [Boolean] No errors?
     def run_on_change(paths)
-      partials = paths.select {|f| ignored?(f) }
+      partials = paths.select {|f| File.basename(f)[0,1] == "_" }
       return run_all unless partials.empty?
-
-      changed_files = paths.reject {|f| ignored?(f) }.map do |file|
-        css_file = get_output(file)
-        begin
-          contents = build_sass(file)
-          if contents
-            File.open(css_file, 'w') {|f| f.write(contents) } unless options[:noop]
-            
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
-            @formatter.success("-> #{message}", :notification => message)
-          end
-          css_file
-        rescue ::Sass::SyntaxError => e
-          @formatter.error(
-            "Sass > #{e.sass_backtrace_str(file)}", 
-            :notification => (options[:noop] ? 'validation' : 'rebuild') + " of #{file} failed"
-          )
-          
-          nil
-        end
-      end.compact
+      
+      changed_files, success = @runner.run(paths)
       
       notify changed_files
+      success
     end
-
+    
+    private
+    
+    # Notify other guards about files that have been changed so that other guards can
+    # work on the changed files.
+    #
+    # @param changed_files [Array<String>]
     def notify(changed_files)
       ::Guard.guards.each do |guard|
-        next if guard == self
         paths = Watcher.match_files(guard, changed_files)
-        guard.run_on_change paths unless paths.empty?
+        guard.run_on_change(paths) unless paths.empty?
       end
     end
 
