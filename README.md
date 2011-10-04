@@ -96,12 +96,12 @@ The following options can be passed to guard-sass:
     :noop => true                       # No operation: Do not write output file
                                         # default: false
     
-    :debug_info_ => true                # File and line number info for FireSass.
+    :debug_info => true                 # File and line number info for FireSass.
                                         # default: false
 
 ### Output short notation
 
-guard-sass also has a short notation like [guard-coffeescript][gcs], this lets 
+guard-sass also has a short notation like [guard-coffeescript][gcs], this lets
 you define an input folder (with an optional output folder) automatically creating
 the required watcher.
 
