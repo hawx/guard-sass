@@ -77,9 +77,6 @@ The following options can be passed to guard-sass:
     :output => 'css'                    # Relative path to the output directory.
                                         # default: 'css' or the :input option when supplied
     
-    :notification => false              # Whether to display success and error notifications.
-                                        # default: true
-    
     :hide_success => true               # Disable successful compilation messages.
                                         # default: false
     

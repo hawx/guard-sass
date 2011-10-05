@@ -5,13 +5,10 @@ module Guard
     class Formatter
 
       # @param opts [Hash]
-      # @option opts [Boolean] :notification
-      #   Whether to show notifications  
       # @option otps [Boolean] :success
       #   Whether to print success messages
       def initialize(opts={})
-        @notification = opts.fetch(:notification, true)
-        @success      = opts.fetch(:show_success, true)
+        @hide_success = opts.fetch(:hide_success, false)
       end
       
       # Show a success message and notification if successes are being shown.
@@ -19,7 +16,7 @@ module Guard
       # @param msg [String]
       # @param opts [Hash]
       def success(msg, opts={})
-        if @success
+        unless @hide_success
           ::Guard::UI.info(msg, opts)      
           notify(opts[:notification], :image => :success)
         end
@@ -34,14 +31,12 @@ module Guard
         notify(opts[:notification], :image => :failed) 
       end
       
-      # Show a system notification, if notifications are enabled.
+      # Show a system notification.
       # 
       # @param msg [String]
       # @param opts [Hash] See http://rubydoc.info/github/guard/guard/master/Guard/Notifier.notify
       def notify(msg, opts={})
-        if @notification
-          ::Guard::Notifier.notify(msg, ({:title => "Guard::Sass"}).merge(opts))
-        end
+        ::Guard::Notifier.notify(msg, ({:title => "Guard::Sass"}).merge(opts))
       end
     
     end

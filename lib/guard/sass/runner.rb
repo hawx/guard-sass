@@ -10,12 +10,9 @@ module Guard
       # @param watchers [Array<Guard::Watcher>]
       # @param options [Hash] See Guard::Sass::DEFAULTS for available options
       def initialize(watchers, options={})
-        @watchers = watchers
-        @options  = options
-        @formatter = Formatter.new(
-          :notification => options[:notification], 
-          :show_success => !options[:hide_success]
-        )
+        @watchers  = watchers
+        @options   = options
+        @formatter = Formatter.new(:hide_success => options[:hide_success])
       end
     
       # @param files [Array<String>]

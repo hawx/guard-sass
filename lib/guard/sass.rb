@@ -11,7 +11,6 @@ module Guard
     DEFAULTS = {
       :output       => 'css',
       :style        => :nested,
-      :notification => true,
       :shallow      => false,
       :debug_info   => false,
       :noop         => false,
@@ -27,8 +26,6 @@ module Guard
     #   The output directory
     # @option options [Array<String>] :load_paths
     #   List of directories you can @import from 
-    # @option options [Boolean] :notification 
-    #   Whether to show notifications
     # @option options [Boolean] :shallow 
     #   Whether to output nested directories
     # @option options [Boolean] :debug_info

@@ -21,10 +21,10 @@ describe Guard::Sass::Formatter do
       end
     end
     
-    context 'if success if to be hidden' do
+    context 'if success is to be hidden' do
       it 'does not show a message' do
         ui.should_not_receive(:info)
-        subject.new(:show_success => false).success("Success message")
+        subject.new(:hide_success => true).success("Success message")
       end
     end
   end
@@ -43,18 +43,9 @@ describe Guard::Sass::Formatter do
   end
   
   describe '#notify' do
-    context 'if notification has been set to true' do
-      it 'shows a system notification' do
-        notifier.should_receive(:notify).with('Notify message', :title => 'Guard::Sass')
-        subject.new.notify('Notify message')
-      end
-    end
-    
-    context 'if notification has been set to false' do
-      it 'does not shows a notification' do
-        notifier.should_not_receive(:notify)
-        subject.new(:notification => false).notify('Notify message')
-      end
+    it 'shows a system notification' do
+      notifier.should_receive(:notify).with('Notify message', :title => 'Guard::Sass')
+      subject.new.notify('Notify message')
     end
   end 
   
