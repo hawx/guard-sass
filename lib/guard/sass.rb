@@ -55,7 +55,7 @@ module Guard
     #
     # @return [Boolean] No errors?
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '*.*'))))
+      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.*'))))
     end
     
     # Build the files given. If a 'partial' file is found (begins with '_') calls
