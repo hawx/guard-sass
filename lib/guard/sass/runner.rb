@@ -40,7 +40,7 @@ module Guard
             message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{output}"
             @formatter.success "-> #{message}", :notification => message
             
-            changed_files << css_file
+            changed_files << output
             
           rescue ::Sass::SyntaxError => e
             message = (options[:noop] ? 'validation' : 'rebuild') + " of #{file} failed"

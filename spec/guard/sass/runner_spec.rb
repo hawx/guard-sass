@@ -11,7 +11,8 @@ describe Guard::Sass::Runner do
   before do
     FileUtils.stub :mkdir_p
     File.stub :open
-    IO.stub(:read).and_return('')
+    IO.stub(:read).and_return ''
+    Guard.stub(:listener).and_return Guard::Listener.new
   end
   
   

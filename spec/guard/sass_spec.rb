@@ -4,11 +4,12 @@ describe Guard::Sass do
 
   subject { Guard::Sass.new }
   
-  let(:runner)    { Guard::Sass::Runner.new([]) }
+  let(:runner) { Guard::Sass::Runner.new([]) }
 
   before do
     subject.instance_variable_set :@runner, runner
-    runner.stub  :run
+    runner.stub :run
+    Guard.stub(:listener).and_return Guard::Listener.new
   end
   
   describe '#initialize' do
@@ -67,7 +68,8 @@ describe Guard::Sass do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
   
     before do 
-      Dir.stub(:glob).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
+      Dir.stub(:glob).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc'].
+                                    map {|i| File.join(Dir.pwd, i) }
       subject.stub :notify
     end
   
