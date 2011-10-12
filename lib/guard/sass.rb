@@ -39,12 +39,16 @@ module Guard
     def initialize(watchers=[], options={})
       if options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{options.delete(:input)}/(.+\.s[ac]ss)$})
+        watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
       end
       
       options = DEFAULTS.merge(options)
       @runner = Runner.new(watchers, options)
       super(watchers, options)
+    end
+    
+    def partial?(path)
+      File.basename(path)[0,1] == "_"
     end
 
     # ================
@@ -55,7 +59,12 @@ module Guard
     #
     # @return [Boolean] No errors?
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '[^_]*.*'))))
+      run_on_change(
+        Watcher.match_files(
+          self, 
+          Dir.glob(File.join('**', '*.s[ac]ss')).reject {|f| partial?(f) }
+        )
+      )
     end
     
     # Build the files given. If a 'partial' file is found (begins with '_') calls
@@ -63,9 +72,9 @@ module Guard
     # 
     # @param paths [Array<String>]
     # @return [Boolean] No errors?
-    def run_on_change(paths)   
-      partials = paths.select {|f| File.basename(f)[0,1] == "_" }
-      return run_all unless partials.empty?
+    def run_on_change(paths) 
+      has_partials = paths.any? {|f| partial?(f) }
+      return run_all if has_partials
       
       changed_files, success = @runner.run(paths)
       

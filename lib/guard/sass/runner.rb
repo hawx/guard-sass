@@ -36,7 +36,8 @@ module Guard
           begin
             css_file = write_file(compile(file), get_output_dir(file), file)
             
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
+            output = css_file[::Guard.listener.directory.size+1..-1]
+            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{output}"
             @formatter.success "-> #{message}", :notification => message
             
             changed_files << css_file
@@ -54,7 +55,7 @@ module Guard
       # @param file [String] Path to sass/scss file to compile
       # @return [String] Compiled css.
       def compile(file)
-        content = IO.read(file)
+        content = IO.read(File.join(::Guard.listener.directory, file))
         
         sass_options = {
           :syntax     => file[-4..-1].to_sym,
@@ -82,7 +83,7 @@ module Guard
           end
         end
   
-        folder
+        File.join(::Guard.listener.directory, folder)
       end
       
       # Write file contents, creating directories where required.
