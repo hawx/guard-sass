@@ -62,7 +62,9 @@ module Guard
       run_on_change(
         Watcher.match_files(
           self, 
-          Dir.glob(File.join('**', '*.s[ac]ss')).reject {|f| partial?(f) }
+          Dir.glob(File.join(::Guard.listener.directory, '**', '*.s[ac]ss')).
+            map {|f| f[::Guard.listener.directory.size+1..-1] }.
+            reject {|f| partial?(f) }
         )
       )
     end
@@ -72,7 +74,7 @@ module Guard
     # 
     # @param paths [Array<String>]
     # @return [Boolean] No errors?
-    def run_on_change(paths) 
+    def run_on_change(paths)
       has_partials = paths.any? {|f| partial?(f) }
       return run_all if has_partials
       
