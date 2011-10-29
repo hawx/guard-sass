@@ -3,6 +3,7 @@
 guard-sass compiles or validates your sass (and scss) files automatically when 
 changed.
 
+
 ## Install
 
 You will need to have [guard](http://github.com/guard/guard) to continue, so 
@@ -20,16 +21,18 @@ And finally add a basic setup to your Guardfile with:
 
     guard init sass
 
+
 ## Usage
 
 Please read the [Guard usage documentation][gdoc].
+
 
 ## Guardfile
 
 guard-sass can be adapted to all kind of projects. Please read the
 [Guard documentation][gdoc] for more information about the Guardfile DSL.
 
-### Ruby project
+### Ruby Project
 
 In a Ruby project you want to configure your input and output directories.
 
@@ -39,7 +42,7 @@ If your output directory is the same as the input directory, you can simply skip
 
     guard 'sass', :input => 'styles'
 
-### Rails app with the asset pipeline
+### Rails App With the Asset Pipeline
 
 With the introduction of the [asset pipeline][rpipe] in Rails 3.1 there is no 
 need to compile your Sass stylesheets with this Guard. However, if you would 
@@ -59,12 +62,21 @@ compilation message:
       :noop => true, 
       :hide_success => true
 
-### Rails app without the asset pipeline
+### Rails App Without the Asset Pipeline
 
 Without the asset pipeline you just define an input and output directory as in
 a normal Ruby project:
 
     guard 'sass', :input => 'app/stylesheets', :output => 'public/stylesheets'
+
+### Output Extensions
+
+It is standard practice in Rails 3.1 to write sass/scss files with the extension
+`.css.sass` to prevent these being written as `.css.sass.css` you need to set
+the `:extension` option like so:
+
+    guard 'sass', :input => 'styles', :extension => ''
+
 
 ## Options
 
@@ -74,8 +86,11 @@ The following options can be passed to guard-sass:
                                         # A suffix `/(.+\.s[ac]ss)` will be added to this option.
                                         # default: nil
     
-    :output => 'css'                    # Relative path to the output directory.
+    :output => 'stylesheets'            # Relative path to the output directory.
                                         # default: 'css' or the :input option when supplied
+                                        
+    :extension => ''                    # Extension used for written files.
+                                        # default: '.css'
     
     :hide_success => true               # Disable successful compilation messages.
                                         # default: false
@@ -96,7 +111,7 @@ The following options can be passed to guard-sass:
     :debug_info => true                 # File and line number info for FireSass.
                                         # default: false
 
-### Output short notation
+### Output Short Notation
 
 guard-sass also has a short notation like [guard-coffeescript][gcs], this lets
 you define an input folder (with an optional output folder) automatically creating
@@ -116,7 +131,7 @@ These are equivalent to
       watch %r{^stylesheets/(.+\.s[ac]ss)$}
     end
 
-### Nested directories
+### Nested Directories
 
 By default the guard detects nested directories and writes files into the output
 directory with the same structure.
@@ -147,6 +162,7 @@ This behaviour can be switched off by passing the option `:shallow => true` to t
 Guard, so that all stylesheets will be compiled directly to the output directory.
 So the previous example would have compiled to `public/stylesheets/button.css`.
 
+
 ## Development
 
 - Source hosted at [GitHub](https://github.com/hawx/guard-sass)
@@ -157,12 +173,14 @@ Pull requests are very welcome!
 For questions please join us on our [Google group][ggroup] or
 on `#guard` (irc.freenode.net).
 
+
 ## Contributors
 
 Have a look at the [GitHub contributor][contrib] list to see all contributors.
 
 Since this Guard is very close to [guard-coffeescript][gcs], some features have been 
 incorporated into guard-sass.
+
 
 ## License
 
