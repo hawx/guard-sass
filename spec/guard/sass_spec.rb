@@ -26,6 +26,7 @@ describe Guard::Sass do
       it 'merges them with defaults' do
         subject.options.should == {
           :output       => 'css',
+          :extension    => '.css',
           :shallow      => false,
           :style        => :compact,
           :debug_info   => false,

@@ -10,6 +10,7 @@ module Guard
 
     DEFAULTS = {
       :output       => 'css',
+      :extension    => '.css',
       :style        => :nested,
       :shallow      => false,
       :debug_info   => false,
