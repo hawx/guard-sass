@@ -93,7 +93,7 @@ module Guard
       # @param file [String] Name of the file
       # @return [String] Path of file written
       def write_file(content, dir, file)
-        path = File.join(dir, File.basename(file.split('.')[0])) << '.css'
+        path = File.join(dir, File.basename(file, '.*')) << '.css'
       
         unless options[:noop]
           FileUtils.mkdir_p(dir)
