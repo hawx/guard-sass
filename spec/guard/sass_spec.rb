@@ -25,6 +25,7 @@ describe Guard::Sass do
     
       it 'merges them with defaults' do
         subject.options.should == {
+          :all_on_start => false,
           :output       => 'css',
           :extension    => '.css',
           :shallow      => false,
@@ -63,6 +64,22 @@ describe Guard::Sass do
       end
     end
     
+  end
+  
+  describe '#start' do
+    it 'does not call #run_all' do
+      subject.should_not_receive(:run_all)
+      subject.start
+    end
+  
+    context ':all_on_start option is true' do
+      subject { Guard::Sass.new [], :all_on_start => true }
+      
+      it 'calls #run_all' do
+        subject.should_receive(:run_all)
+        subject.start
+      end
+    end
   end
 
   describe '#run_all' do
