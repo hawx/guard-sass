@@ -9,6 +9,7 @@ module Guard
     autoload :Formatter, 'guard/sass/formatter'
 
     DEFAULTS = {
+      :on_start     => false,
       :output       => 'css',
       :extension    => '.css',
       :style        => :nested,
@@ -46,10 +47,17 @@ module Guard
       options = DEFAULTS.merge(options)
       @runner = Runner.new(watchers, options)
       super(watchers, options)
+      @options = options
     end
     
     def partial?(path)
       File.basename(path)[0,1] == "_"
+    end
+
+    def start
+      if @options[:on_start]
+        run_all
+      end
     end
 
     # ================
