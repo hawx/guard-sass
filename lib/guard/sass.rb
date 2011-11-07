@@ -9,7 +9,7 @@ module Guard
     autoload :Formatter, 'guard/sass/formatter'
 
     DEFAULTS = {
-      :on_start     => false,
+      :all_on_start => false,
       :output       => 'css',
       :extension    => '.css',
       :style        => :nested,
@@ -47,22 +47,18 @@ module Guard
       options = DEFAULTS.merge(options)
       @runner = Runner.new(watchers, options)
       super(watchers, options)
-      @options = options
     end
     
     def partial?(path)
       File.basename(path)[0,1] == "_"
     end
 
+    # If option set to run all on start, run all when started.
     def start
-      if @options[:on_start]
+      if options[:all_on_start]
         run_all
       end
     end
-
-    # ================
-    # = Guard method =
-    # ================
 
     # Build all files being watched
     #
