@@ -89,6 +89,9 @@ The following options can be passed to guard-sass:
     :output => 'stylesheets'            # Relative path to the output directory.
                                         # default: 'css' or the :input option when supplied
                                         
+    :all_on_start => true               # Compiles all sass files on start
+                                        # default: false
+                                        
     :extension => ''                    # Extension used for written files.
                                         # default: '.css'
     
