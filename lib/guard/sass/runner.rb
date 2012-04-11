@@ -35,12 +35,9 @@ module Guard
         files.each do |file|          
           begin
             css_file = write_file(compile(file), get_output_dir(file), file)
-            
-            output = css_file[::Guard.listener.directory.size+1..-1]
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{output}"
+            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
             @formatter.success "-> #{message}", :notification => message
-            
-            changed_files << output
+            changed_files << css_file
             
           rescue ::Sass::SyntaxError => e
             message = (options[:noop] ? 'validation' : 'rebuild') + " of #{file} failed"
@@ -82,8 +79,8 @@ module Guard
             end
           end
         end
-  
-        File.join(::Guard.listener.directory, folder)
+        
+        folder
       end
       
       # Write file contents, creating directories where required.
@@ -94,7 +91,7 @@ module Guard
       # @return [String] Path of file written
       def write_file(content, dir, file)
         path = File.join(dir, File.basename(file, '.*')) << options[:extension]
-      
+
         unless options[:noop]
           FileUtils.mkdir_p(dir)
           File.open(path, 'w') {|f| f.write(content) }
