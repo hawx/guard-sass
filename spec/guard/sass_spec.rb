@@ -42,7 +42,7 @@ describe Guard::Sass do
           :noop         => true,
           :hide_success => true,
           :line_numbers => true,
-          :load_paths   => ::Sass::Plugin.template_location_array.map { |dir| dir.first }
+          :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
         }
       end
     end
