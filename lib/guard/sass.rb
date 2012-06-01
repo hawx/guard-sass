@@ -1,6 +1,7 @@
 require 'guard'
 require 'guard/guard'
 require 'guard/watcher'
+require 'sass/plugin'
 
 module Guard
   class Sass < Guard
@@ -17,7 +18,7 @@ module Guard
       :debug_info   => false,
       :noop         => false,
       :hide_success => false,
-      :load_paths   => Dir.glob('**/**').find_all {|i| File.directory?(i) }
+      :load_paths   => ::Sass::Plugin.template_location_array.map { |dir| dir.first }
     }
 
     # @param watchers [Array<Guard::Watcher>]
