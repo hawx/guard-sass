@@ -106,7 +106,7 @@ The following options can be passed to guard-sass:
                                         # default: :nested
     
     :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
-                                        # default: all directories under current
+                                        # default: template locations provided by the sass gem
     
     :noop => true                       # No operation: Do not write output file
                                         # default: false
