@@ -106,7 +106,7 @@ The following options can be passed to guard-sass:
                                         # default: :nested
     
     :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
-                                        # default: all directories under current
+                                        # default: template locations provided by the sass gem
     
     :noop => true                       # No operation: Do not write output file
                                         # default: false
@@ -189,7 +189,7 @@ incorporated into guard-sass.
 
 (The MIT License)
 
-Copyright (c) 2010 - 2011 Joshua Hawxwell
+Copyright (c) 2010 - 2012 Joshua Hawxwell
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

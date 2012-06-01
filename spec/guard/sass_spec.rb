@@ -33,7 +33,7 @@ describe Guard::Sass do
           :debug_info   => false,
           :noop         => true,
           :hide_success => true,
-          :load_paths   => ::Sass::Plugin.template_location_array.map { |dir| dir.first }
+          :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
         }
       end
     end
