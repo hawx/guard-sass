@@ -18,7 +18,7 @@ module Guard
       :debug_info   => false,
       :noop         => false,
       :hide_success => false,
-      :load_paths   => ::Sass::Plugin.template_location_array.map { |dir| dir.first }
+      :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
     }
 
     # @param watchers [Array<Guard::Watcher>]
