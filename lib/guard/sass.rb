@@ -15,6 +15,7 @@ module Guard
       :extension    => '.css',
       :style        => :nested,
       :shallow      => false,
+      :line_numbers => false,
       :debug_info   => false,
       :noop         => false,
       :hide_success => false,
@@ -31,6 +32,8 @@ module Guard
     #   List of directories you can @import from
     # @option options [Boolean] :shallow
     #   Whether to output nested directories
+    # @option options [Boolean] :line_numbers
+    #   Whether to output human readable line numbers as comments in the file
     # @option options [Boolean] :debug_info
     #   Whether to output file and line number info for FireSass
     # @option options [Boolean] :noop
