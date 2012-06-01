@@ -40,12 +40,17 @@ module Guard
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
     def initialize(watchers=[], options={})
+      load_paths = options.delete(:load_paths) || []
+
       if options[:input]
+        load_paths << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
       end
 
       options = DEFAULTS.merge(options)
+      options[:load_paths] += load_paths
+
       @runner = Runner.new(watchers, options)
       super(watchers, options)
     end
