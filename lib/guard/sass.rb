@@ -70,7 +70,7 @@ module Guard
     # @raise [:task_has_failed]
     def run_all
       files = Dir.glob('**/*.s[ac]ss').reject {|f| partial?(f) }
-      run_on_change Watcher.match_files(self, files)
+      run_on_changes Watcher.match_files(self, files)
     end
 
     # Build the files given. If a 'partial' file is found (begins with '_') calls
