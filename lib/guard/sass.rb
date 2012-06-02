@@ -1,13 +1,11 @@
+require 'sass/plugin'
+
 require 'guard'
 require 'guard/guard'
 require 'guard/watcher'
-require 'sass/plugin'
 
 module Guard
   class Sass < Guard
-
-    autoload :Runner,    'guard/sass/runner'
-    autoload :Formatter, 'guard/sass/formatter'
 
     DEFAULTS = {
       :all_on_start => false,
@@ -110,3 +108,6 @@ module Guard
 
   end
 end
+
+require 'guard/sass/runner'
+require 'guard/sass/formatter'
