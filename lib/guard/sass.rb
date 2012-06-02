@@ -78,13 +78,19 @@ module Guard
     #
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
-    def run_on_change(paths)
+    def run_on_changes(paths)
       return run_all if paths.any? {|f| partial?(f) }
 
       changed_files, success = @runner.run(paths)
       notify changed_files
 
       throw :task_has_failed unless success
+    end
+
+    # Restore previous behaviour, when a file is removed we don't want to call
+    # {#run_on_changes}.
+    def run_on_removals(paths)
+
     end
 
     # Notify other guards about files that have been changed so that other guards can

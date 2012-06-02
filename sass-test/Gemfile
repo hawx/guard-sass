@@ -5,5 +5,5 @@ group :osx do
   gem 'rb-fsevent'
 end
 
-gem 'guard'
+gem 'guard', '>= 1.1.0'
 gem 'guard-sass', :path => '../'
