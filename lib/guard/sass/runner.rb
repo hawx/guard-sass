@@ -1,4 +1,5 @@
 require 'sass'
+require 'benchmark'
 
 module Guard
   class Sass
@@ -34,9 +35,10 @@ module Guard
         # Assume partials have been checked for previously, so no partials are included here
         files.each do |file|
           begin
-            css_file = write_file(compile(file), get_output_dir(file), file)
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
-            @formatter.success "-> #{message}", :notification => message
+            css_file = nil
+            time = Benchmark.realtime { css_file = write_file(compile(file), get_output_dir(file), file) }
+            message = options[:noop] ? "verified #{file} (#{time})" : "[\e[33m%2.2fs\e[0m] #{file} -> #{css_file}" % time
+            @formatter.success "#{message}", :notification => message
             changed_files << css_file
 
           rescue ::Sass::SyntaxError => e
