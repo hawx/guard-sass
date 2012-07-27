@@ -49,9 +49,29 @@ module Guard
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
       end
-
       options = DEFAULTS.merge(options)
+
+      if compass = options.delete(:compass)
+        require 'compass'
+        compass = {} unless compass.is_a?(Hash)
+
+        Compass.add_project_configuration
+        Compass.configuration.project_path   ||= Dir.pwd
+        Compass.configuration.images_dir       = compass[:images_dir]       || "app/assets/images"
+        Compass.configuration.images_path      = compass[:images_path]      || File.join(Dir.pwd, "app/assets/images")
+        Compass.configuration.http_images_path = compass[:http_images_path] || "/assets"
+        Compass.configuration.http_images_dir  = compass[:http_images_dir]  || "/assets"
+
+        Compass.configuration.http_fonts_path  = compass[:http_fonts_path]  || "/assets"
+        Compass.configuration.http_fonts_dir   = compass[:http_fonts_dir]   || "/assets"
+
+        Compass.configuration.asset_cache_buster = Proc.new {|*| {:query => Time.now.to_i} }
+        options[:load_paths] ||= []
+        options[:load_paths] << Compass.configuration.sass_load_paths
+      end
+
       options[:load_paths] += load_paths
+      options[:load_paths].flatten!
 
       @runner = Runner.new(watchers, options)
       super(watchers, options)
@@ -83,20 +103,15 @@ module Guard
 
       # Our changed paths need to be reduced to the a relative path to test for search inclusing
       # /path/to/app/stylesheets/foo/_bar.sass => foo/_bar.sass
-      # We then generate underscore-less versions of each of the files, since Sass will accept them
-      # for imports, and append those to our search list.
+      # We then generate underscore-less and extension-less strings, which are passed to the regexp.
       partials = paths.select {|p| partial? p }
       paths -= partials
-      sub_paths = partials.map {|p| p.reverse.chomp(root).reverse }
-      sub_paths += sub_paths.map {|p| p.gsub(/\.s[ca]ss$/, "")}
-      sub_paths += sub_paths.map {|p| p.gsub(/\/_/, "/")}
-      sub_paths.uniq!
+      sub_paths = partials.map {|p| p.reverse.chomp(root).reverse.gsub(/(\/|^)_/, "\\1").gsub(/\.s[ca]ss$/, "") }
 
       # Search through all eligible files and find those we need to recompile
-      importing = search_files.select do |file|
-        content = open(file).read
-        sub_paths.any? {|p| content.match(/import.*?(['"])_?#{p}(?:\.s[ac]ss|\1)?/)}
-      end
+      joined_paths = sub_paths.map {|p| Regexp.escape(p) }.join("|")
+      matcher = /@import.*(:?#{joined_paths})/
+      importing = search_files.select {|file| open(file, 'r').read.match(matcher) }
       paths += importing
 
       # If any of the matched files were partials, then go ahead and recurse to walk up the import tree
