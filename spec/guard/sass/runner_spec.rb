@@ -48,7 +48,7 @@ describe Guard::Sass::Runner do
       subject { Guard::Sass::Runner.new([watcher], defaults) }
 
       it 'shows a success message' do
-        formatter.should_receive(:success).with("a.sass -> css/a.css", instance_of(Hash))
+        formatter.should_receive(:success).with("a.sass -> a.css", instance_of(Hash))
         subject.run(['a.sass'])
       end
 

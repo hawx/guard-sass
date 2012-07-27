@@ -45,9 +45,8 @@ module Guard
 
       if options[:input]
         load_paths << options[:input]
-        @input = options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
+        watchers << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
       end
       options = DEFAULTS.merge(options)
 
@@ -97,8 +96,8 @@ module Guard
       throw :task_has_failed if depth > 10
 
       # Get all files that might have imports
-      root = (@input[-1] == "/" ? @input : "#{@input}/").reverse
-      search_files = Dir.glob("#{@input}/**/*.s[ac]ss")
+      root = (options[:input][-1] == "/" ? options[:input] : "#{options[:input]}/").reverse
+      search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
       search_files = Watcher.match_files(self, search_files)
 
       # Our changed paths need to be reduced to the a relative path to test for search inclusing

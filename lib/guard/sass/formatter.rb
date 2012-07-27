@@ -19,7 +19,7 @@ module Guard
         unless @hide_success
           benchmark = nil
           if time = opts.delete(:time)
-            benchmark = "[\e[33m%2.2fs\e[0m]" % time
+            benchmark = "[\e[33m%2.2fs\e[0m] " % time
           end
           ::Guard::UI.info("\t\e[1;37mSass\e[0m %s%s" % [benchmark, msg], opts)
           notify(opts[:notification], :image => :success)

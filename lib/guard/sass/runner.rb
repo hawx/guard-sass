@@ -33,11 +33,19 @@ module Guard
         changed_files = []
 
         # Assume partials have been checked for previously, so no partials are included here
+        rinput  = (options[:input]  || "").reverse
+        routput = (options[:output] || "").reverse
+        max_length = files.map do |file|
+          file.reverse.chomp(rinput).reverse.gsub(/^\//, "").length
+        end.max || 0
+
         files.each do |file|
           begin
             css_file = nil
             time = Benchmark.realtime { css_file = write_file(compile(file), get_output_dir(file), file) }
-            message = options[:noop] ? "verified #{file} (#{time})" : "#{file} -> #{css_file}"
+            short_file = file.reverse.chomp(rinput).reverse.gsub(/^\//, "")
+            short_css_file = css_file.reverse.chomp(routput).reverse.gsub(/^\//, "")
+            message = options[:noop] ? "verified #{file} (#{time})" : "%s -> %s" % [short_file.ljust(max_length), short_css_file]
             @formatter.success "#{message}", :notification => message, :time => time
             changed_files << css_file
 
