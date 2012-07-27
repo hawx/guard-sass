@@ -45,6 +45,7 @@ module Guard
 
       if options[:input]
         load_paths << options[:input]
+        @input = options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
       end
@@ -71,13 +72,54 @@ module Guard
       run_on_changes Watcher.match_files(self, files)
     end
 
+    def resolve_partials_to_owners(paths, depth = 0)
+      # If we get more than 10 levels of includes deep, we're probably in an import loop.
+      throw :task_has_failed if depth > 10
+
+      # Get all files that might have imports
+      root = (@input[-1] == "/" ? @input : "#{@input}/").reverse
+      search_files = Dir.glob("#{@input}/**/*.s[ac]ss")
+      search_files = Watcher.match_files(self, search_files)
+
+      # Our changed paths need to be reduced to the a relative path to test for search inclusing
+      # /path/to/app/stylesheets/foo/_bar.sass => foo/_bar.sass
+      # We then generate underscore-less versions of each of the files, since Sass will accept them
+      # for imports, and append those to our search list.
+      partials = paths.select {|p| partial? p }
+      paths -= partials
+      sub_paths = partials.map {|p| p.reverse.chomp(root).reverse }
+      sub_paths += sub_paths.map {|p| p.gsub(/\.s[ca]ss$/, "")}
+      sub_paths += sub_paths.map {|p| p.gsub(/\/_/, "/")}
+      sub_paths.uniq!
+
+      # Search through all eligible files and find those we need to recompile
+      importing = search_files.select do |file|
+        content = open(file).read
+        sub_paths.any? {|p| content.match(/import.*?(['"])_?#{p}(?:\.s[ac]ss|\1)?/)}
+      end
+      paths += importing
+
+      # If any of the matched files were partials, then go ahead and recurse to walk up the import tree
+      paths = resolve_partials_to_owners(paths, depth + 1) if paths.any? {|f| partial? f }
+
+      # Return our resolved set of paths to recompile
+      paths
+    end
+
+    def run_with_partials(paths)
+      if options[:smart_partials]
+        paths = resolve_partials_to_owners(paths)
+      end
+      run_on_changes Watcher.match_files(self, paths)
+    end
+
     # Build the files given. If a 'partial' file is found (begins with '_') calls
     # {#run_all} as we don't know which other files need to use it.
     #
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
     def run_on_changes(paths)
-      return run_all if paths.any? {|f| partial?(f) }
+      return run_with_partials(paths) if paths.any? {|f| partial?(f) }
 
       changed_files, success = @runner.run(paths)
       notify changed_files
@@ -103,7 +145,7 @@ module Guard
     end
 
     def partial?(path)
-      File.basename(path)[0,1] == "_"
+      File.basename(path).start_with? "_"
     end
 
   end
