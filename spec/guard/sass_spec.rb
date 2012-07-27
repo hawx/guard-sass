@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Guard::Sass do
 
-  subject { Guard::Sass.new }
+  subject { ::Guard::Sass.new }
 
   let(:runner) { Guard::Sass::Runner.new([]) }
 
   before do
     subject.instance_variable_set :@runner, runner
     runner.stub :run
-    Guard.stub(:listener).and_return Guard::Listener.new
+    Guard.stub(:listener).and_return stub('Listener')
   end
 
   describe '#initialize' do
@@ -95,18 +95,17 @@ describe Guard::Sass do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
 
     before do
-      Dir.stub(:glob).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc'].
-                                    map {|i| File.join(Dir.pwd, i) }
+      Dir.stub(:glob).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
       subject.stub :notify
     end
 
-    it 'calls #run_on_change with all watched files' do
-      subject.should_receive(:run_on_change).with(['a.sass', 'b.scss'])
+    it 'calls #run_on_changes with all watched files' do
+      subject.should_receive(:run_on_changes).with(['a.sass', 'b.scss'])
       subject.run_all
     end
   end
 
-  describe '#run_on_change' do
+  describe '#run_on_changes' do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
 
     before { subject.stub :notify }
@@ -114,19 +113,28 @@ describe Guard::Sass do
     context 'if paths given contain partials' do
       it 'calls #run_all' do
         subject.should_receive(:run_all)
-        subject.run_on_change(['sass/_partial.sass'])
+        subject.run_on_changes(['sass/_partial.sass'])
+      end
+
+      context "and :smart_partials is given" do
+        before { subject.options[:smart_partials] = true  }
+        after  { subject.options[:smart_partials] = false }
+        it 'calls #resolve_partials_to_owners' do
+          subject.should_receive(:resolve_partials_to_owners)
+          subject.run_on_changes(['sass/_partial.sass'])
+        end
       end
     end
 
     it 'starts the Runner' do
-      runner.should_receive(:run).with(['a.sass'])
-      subject.run_on_change(['a.sass'])
+      runner.should_receive(:run).with(['a.sass']).and_return([nil, true])
+      subject.run_on_changes(['a.sass'])
     end
 
     it 'notifies the other guards about changed files' do
       runner.stub(:run).and_return([['a.css', 'b.css'], true])
       subject.should_receive(:notify).with(['a.css', 'b.css'])
-      subject.run_on_change(['a.sass', 'b.scss'])
+      subject.run_on_changes(['a.sass', 'b.scss'])
     end
   end
 

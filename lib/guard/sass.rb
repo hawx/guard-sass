@@ -124,8 +124,10 @@ module Guard
     def run_with_partials(paths)
       if options[:smart_partials]
         paths = resolve_partials_to_owners(paths)
+        run_on_changes Watcher.match_files(self, paths) unless paths.nil?
+      else
+        run_all
       end
-      run_on_changes Watcher.match_files(self, paths)
     end
 
     # Build the files given. If a 'partial' file is found (begins with '_') calls

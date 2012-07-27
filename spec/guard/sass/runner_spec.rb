@@ -12,7 +12,7 @@ describe Guard::Sass::Runner do
     FileUtils.stub :mkdir_p
     File.stub :open
     IO.stub(:read).and_return ''
-    Guard.stub(:listener).and_return Guard::Listener.new
+    Guard.stub(:listener).and_return stub('Listener')
   end
 
 
@@ -48,8 +48,7 @@ describe Guard::Sass::Runner do
       subject { Guard::Sass::Runner.new([watcher], defaults) }
 
       it 'shows a success message' do
-        formatter.should_receive(:success).with('-> compiled a.sass to css/a.css',
-          :notification => 'compiled a.sass to css/a.css')
+        formatter.should_receive(:success).with("a.sass -> css/a.css", instance_of(Hash))
         subject.run(['a.sass'])
       end
 

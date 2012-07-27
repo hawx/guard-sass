@@ -37,8 +37,8 @@ module Guard
           begin
             css_file = nil
             time = Benchmark.realtime { css_file = write_file(compile(file), get_output_dir(file), file) }
-            message = options[:noop] ? "verified #{file} (#{time})" : "[\e[33m%2.2fs\e[0m] #{file} -> #{css_file}" % time
-            @formatter.success "#{message}", :notification => message
+            message = options[:noop] ? "verified #{file} (#{time})" : "#{file} -> #{css_file}"
+            @formatter.success "#{message}", :notification => message, :time => time
             changed_files << css_file
 
           rescue ::Sass::SyntaxError => e

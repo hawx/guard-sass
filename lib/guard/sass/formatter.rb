@@ -17,7 +17,11 @@ module Guard
       # @param opts [Hash]
       def success(msg, opts={})
         unless @hide_success
-          ::Guard::UI.info("\t\e[1;37mSass\e[0m #{msg}", opts)
+          benchmark = nil
+          if time = opts.delete(:time)
+            benchmark = "[\e[33m%2.2fs\e[0m]" % time
+          end
+          ::Guard::UI.info("\t\e[1;37mSass\e[0m %s%s" % [benchmark, msg], opts)
           notify(opts[:notification], :image => :success)
         end
       end
