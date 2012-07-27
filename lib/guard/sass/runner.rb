@@ -71,7 +71,6 @@ module Guard
           :debug_info   => options[:debug_info],
           :line_numbers => options[:line_numbers]
         }
-
         ::Sass::Engine.new(content, sass_options).render
       end
 
@@ -111,7 +110,6 @@ module Guard
 
         path
       end
-
     end
   end
 end

@@ -104,6 +104,11 @@ The following options can be passed to guard-sass:
       :http_fonts_dir => "/assets"
     }
 
+    :smart_partials => true             # Causes guard-sass to do dependency resolution and only recompile
+                                        # the files that need it when you update partials. If not on, then
+                                        # guard-sass will update all files when a partial is changed.
+                                        # default: false
+
     :hide_success => true               # Disable successful compilation messages.
                                         # default: false
 
