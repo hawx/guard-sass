@@ -15,7 +15,7 @@ Install the gem with:
 
 Add it to your Gemfile:
 
-    gem 'guard-sass'
+    gem 'guard-sass', :require => false
 
 And finally add a basic setup to your Guardfile with:
 
