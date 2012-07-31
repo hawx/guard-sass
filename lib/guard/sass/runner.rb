@@ -35,17 +35,30 @@ module Guard
         # Assume partials have been checked for previously, so no partials are included here
         rinput  = (options[:input]  || "").reverse
         routput = (options[:output] || "").reverse
+
+        input   = options[:input]  || ''
+        output  = options[:output] || ''
+
         max_length = files.map do |file|
-          file.reverse.chomp(rinput).reverse.gsub(/^\//, "").length
+          file.sub(/^#{input}/, '').gsub(/^\//, '').length
         end.max || 0
 
         files.each do |file|
           begin
             css_file = nil
-            time = Benchmark.realtime { css_file = write_file(compile(file), get_output_dir(file), file) }
-            short_file = file.reverse.chomp(rinput).reverse.gsub(/^\//, "")
-            short_css_file = css_file.reverse.chomp(routput).reverse.gsub(/^\//, "")
-            message = options[:noop] ? "verified #{file} (#{time})" : "%s -> %s" % [short_file.ljust(max_length), short_css_file]
+            time = Benchmark.realtime do
+              css_file = write_file(compile(file), get_output_dir(file), file)
+            end
+
+            short_file     = file.sub(/^#{input}/, '').gsub(/^\//, '')
+            short_css_file = css_file.sub(/^#{output}/, '').gsub(/^\//, '')
+
+            message = if options[:noop]
+                        "verified #{file} (#{time})"
+                      else
+                        "%s -> %s" % [short_file.ljust(max_length), short_css_file]
+                      end
+
             @formatter.success "#{message}", :notification => message, :time => time
             changed_files << css_file
 
@@ -100,7 +113,7 @@ module Guard
       # @param file [String] Name of the file
       # @return [String] Path of file written
       def write_file(content, dir, file)
-        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, ".css")
+        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, '.css')
         path = File.join(dir, filename)
 
         unless options[:noop]

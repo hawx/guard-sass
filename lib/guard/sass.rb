@@ -76,6 +76,11 @@ module Guard
       super(watchers, options)
     end
 
+    # @return [Array<String>] Paths of all sass/scss files
+    def files
+      Watcher.match_files self, Dir['**/*.s[ac]ss']
+    end
+
     # If option set to run all on start, run all when started.
     #
     # @raise [:task_has_failed]
@@ -87,34 +92,44 @@ module Guard
     #
     # @raise [:task_has_failed]
     def run_all
-      files = Dir.glob('**/*.s[ac]ss').reject {|f| partial?(f) }
-      run_on_changes Watcher.match_files(self, files)
+      run_on_changes files.reject {|f| partial?(f) }
     end
 
     def resolve_partials_to_owners(paths, depth = 0)
-      # If we get more than 10 levels of includes deep, we're probably in an import loop.
-      throw :task_has_failed if depth > 10
+      # If we get more than 10 levels of includes deep, we're probably in an
+      # import loop.
+      return run_all if depth > 10
 
       # Get all files that might have imports
-      root = (options[:input][-1] == "/" ? options[:input] : "#{options[:input]}/").reverse
-      search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
-      search_files = Watcher.match_files(self, search_files)
+      root = options[:input]
+      root += '/' unless root.end_with?('/')
 
-      # Our changed paths need to be reduced to the a relative path to test for search inclusing
-      # /path/to/app/stylesheets/foo/_bar.sass => foo/_bar.sass
-      # We then generate underscore-less and extension-less strings, which are passed to the regexp.
-      partials = paths.select {|p| partial? p }
-      paths -= partials
-      sub_paths = partials.map {|p| p.reverse.chomp(root).reverse.gsub(/(\/|^)_/, "\\1").gsub(/\.s[ca]ss$/, "") }
+      partials  = paths.find_all {|f| partial?(f) }
+      paths    -= partials
+      sub_paths = partials.map {|p|
+        # Remove root, need relative paths
+        p.sub(/^#{root}/, '')
+      }.map {|p|
+        # Make version without underscores
+        [p, p.gsub(/(\/|^)_/, '\\1')]
+      }.map {|ps|
+        # For each of those, make a version with extensions
+        ps.map {|p|
+          [p, p.gsub(/\.s[ac]ss$/, '')]
+        }
+      }.flatten
 
       # Search through all eligible files and find those we need to recompile
-      joined_paths = sub_paths.map {|p| Regexp.escape(p) }.join("|")
+      joined_paths = sub_paths.map {|p| Regexp.escape(p) }.join('|')
       matcher = /@import.*(:?#{joined_paths})/
-      importing = search_files.select {|file| open(file, 'r').read.match(matcher) }
+      importing = files.find_all {|file| open(file, 'r').read.match(matcher) }
       paths += importing
 
-      # If any of the matched files were partials, then go ahead and recurse to walk up the import tree
-      paths = resolve_partials_to_owners(paths, depth + 1) if paths.any? {|f| partial? f }
+      # If any of the matched files were partials, then go ahead and walk up the
+      # import tree
+      if paths.any? {|f| partial?(f) }
+        paths = resolve_partials_to_owners(paths, depth + 1)
+      end
 
       # Return our resolved set of paths to recompile
       paths
@@ -129,8 +144,9 @@ module Guard
       end
     end
 
-    # Build the files given. If a 'partial' file is found (begins with '_') calls
-    # {#run_all} as we don't know which other files need to use it.
+    # Builds the files given. If a 'partial' file is found (name begins with
+    # '_'), calls {#run_with_partials} so that files which include it are
+    # rebuilt.
     #
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
@@ -160,8 +176,9 @@ module Guard
       end
     end
 
+    # @return Whether +path+ is a partial
     def partial?(path)
-      File.basename(path).start_with? "_"
+      File.basename(path).start_with? '_'
     end
 
   end

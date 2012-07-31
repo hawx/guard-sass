@@ -4,4 +4,6 @@
 #  watch %r{^scss/(.*)}
 #end
 
-guard 'sass', :input => '_sass', :output => 'css'
+guard 'sass', :input => '_sass', 
+              :output => 'css',
+              :smart_partials => true

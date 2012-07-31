@@ -95,7 +95,7 @@ describe Guard::Sass do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
 
     before do
-      Dir.stub(:glob).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
+      Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
       subject.stub :notify
     end
 
