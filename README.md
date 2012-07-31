@@ -92,8 +92,22 @@ The following options can be passed to guard-sass:
     :all_on_start => true               # Compiles all sass files on start
                                         # default: false
 
-    :extension => ''                    # Extension used for written files.
-                                        # default: '.css'
+    :compass => true                    # Enable Compass support with default Rails 3.1-compatible options
+                                        # You can overwrite any of these options by passing a hash.
+
+    :compass => {
+      :images_dir => "app/assets/images",
+      :images_path => File.join(Dir.pwd, "app/assets/images"),
+      :http_images_path => "/assets",
+      :http_images_dir => "/assets",
+      :http_fonts_path => "/assets",
+      :http_fonts_dir => "/assets"
+    }
+
+    :smart_partials => true             # Causes guard-sass to do dependency resolution and only recompile
+                                        # the files that need it when you update partials. If not on, then
+                                        # guard-sass will update all files when a partial is changed.
+                                        # default: false
 
     :hide_success => true               # Disable successful compilation messages.
                                         # default: false

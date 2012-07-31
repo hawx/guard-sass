@@ -1,4 +1,5 @@
 require 'sass'
+require 'benchmark'
 
 module Guard
   class Sass
@@ -32,11 +33,20 @@ module Guard
         changed_files = []
 
         # Assume partials have been checked for previously, so no partials are included here
+        rinput  = (options[:input]  || "").reverse
+        routput = (options[:output] || "").reverse
+        max_length = files.map do |file|
+          file.reverse.chomp(rinput).reverse.gsub(/^\//, "").length
+        end.max || 0
+
         files.each do |file|
           begin
-            css_file = write_file(compile(file), get_output_dir(file), file)
-            message = options[:noop] ? "verified #{file}" : "compiled #{file} to #{css_file}"
-            @formatter.success "-> #{message}", :notification => message
+            css_file = nil
+            time = Benchmark.realtime { css_file = write_file(compile(file), get_output_dir(file), file) }
+            short_file = file.reverse.chomp(rinput).reverse.gsub(/^\//, "")
+            short_css_file = css_file.reverse.chomp(routput).reverse.gsub(/^\//, "")
+            message = options[:noop] ? "verified #{file} (#{time})" : "%s -> %s" % [short_file.ljust(max_length), short_css_file]
+            @formatter.success "#{message}", :notification => message, :time => time
             changed_files << css_file
 
           rescue ::Sass::SyntaxError => e
@@ -61,7 +71,6 @@ module Guard
           :debug_info   => options[:debug_info],
           :line_numbers => options[:line_numbers]
         }
-
         ::Sass::Engine.new(content, sass_options).render
       end
 
@@ -91,7 +100,8 @@ module Guard
       # @param file [String] Name of the file
       # @return [String] Path of file written
       def write_file(content, dir, file)
-        path = File.join(dir, File.basename(file, '.*')) << options[:extension]
+        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, ".css")
+        path = File.join(dir, filename)
 
         unless options[:noop]
           FileUtils.mkdir_p(dir)
@@ -100,7 +110,6 @@ module Guard
 
         path
       end
-
     end
   end
 end

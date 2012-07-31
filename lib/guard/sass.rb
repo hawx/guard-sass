@@ -46,11 +46,31 @@ module Guard
       if options[:input]
         load_paths << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.s[ac]ss)$})
+        watchers << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
+      end
+      options = DEFAULTS.merge(options)
+
+      if compass = options.delete(:compass)
+        require 'compass'
+        compass = {} unless compass.is_a?(Hash)
+
+        Compass.add_project_configuration
+        Compass.configuration.project_path   ||= Dir.pwd
+        Compass.configuration.images_dir       = compass[:images_dir]       || "app/assets/images"
+        Compass.configuration.images_path      = compass[:images_path]      || File.join(Dir.pwd, "app/assets/images")
+        Compass.configuration.http_images_path = compass[:http_images_path] || "/assets"
+        Compass.configuration.http_images_dir  = compass[:http_images_dir]  || "/assets"
+
+        Compass.configuration.http_fonts_path  = compass[:http_fonts_path]  || "/assets"
+        Compass.configuration.http_fonts_dir   = compass[:http_fonts_dir]   || "/assets"
+
+        Compass.configuration.asset_cache_buster = Proc.new {|*| {:query => Time.now.to_i} }
+        options[:load_paths] ||= []
+        options[:load_paths] << Compass.configuration.sass_load_paths
       end
 
-      options = DEFAULTS.merge(options)
       options[:load_paths] += load_paths
+      options[:load_paths].flatten!
 
       @runner = Runner.new(watchers, options)
       super(watchers, options)
@@ -71,13 +91,51 @@ module Guard
       run_on_changes Watcher.match_files(self, files)
     end
 
+    def resolve_partials_to_owners(paths, depth = 0)
+      # If we get more than 10 levels of includes deep, we're probably in an import loop.
+      throw :task_has_failed if depth > 10
+
+      # Get all files that might have imports
+      root = (options[:input][-1] == "/" ? options[:input] : "#{options[:input]}/").reverse
+      search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
+      search_files = Watcher.match_files(self, search_files)
+
+      # Our changed paths need to be reduced to the a relative path to test for search inclusing
+      # /path/to/app/stylesheets/foo/_bar.sass => foo/_bar.sass
+      # We then generate underscore-less and extension-less strings, which are passed to the regexp.
+      partials = paths.select {|p| partial? p }
+      paths -= partials
+      sub_paths = partials.map {|p| p.reverse.chomp(root).reverse.gsub(/(\/|^)_/, "\\1").gsub(/\.s[ca]ss$/, "") }
+
+      # Search through all eligible files and find those we need to recompile
+      joined_paths = sub_paths.map {|p| Regexp.escape(p) }.join("|")
+      matcher = /@import.*(:?#{joined_paths})/
+      importing = search_files.select {|file| open(file, 'r').read.match(matcher) }
+      paths += importing
+
+      # If any of the matched files were partials, then go ahead and recurse to walk up the import tree
+      paths = resolve_partials_to_owners(paths, depth + 1) if paths.any? {|f| partial? f }
+
+      # Return our resolved set of paths to recompile
+      paths
+    end
+
+    def run_with_partials(paths)
+      if options[:smart_partials]
+        paths = resolve_partials_to_owners(paths)
+        run_on_changes Watcher.match_files(self, paths) unless paths.nil?
+      else
+        run_all
+      end
+    end
+
     # Build the files given. If a 'partial' file is found (begins with '_') calls
     # {#run_all} as we don't know which other files need to use it.
     #
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
     def run_on_changes(paths)
-      return run_all if paths.any? {|f| partial?(f) }
+      return run_with_partials(paths) if paths.any? {|f| partial?(f) }
 
       changed_files, success = @runner.run(paths)
       notify changed_files
@@ -103,7 +161,7 @@ module Guard
     end
 
     def partial?(path)
-      File.basename(path)[0,1] == "_"
+      File.basename(path).start_with? "_"
     end
 
   end
