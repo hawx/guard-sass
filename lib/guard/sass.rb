@@ -17,7 +17,8 @@ module Guard
       :debug_info   => false,
       :noop         => false,
       :hide_success => false,
-      :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
+      :load_paths   => ::Sass::Plugin.template_location_array.map(&:first),
+      :libs         => []
     }
 
     # @param watchers [Array<Guard::Watcher>]
@@ -28,6 +29,8 @@ module Guard
     #   The output directory
     # @option options [Array<String>] :load_paths
     #   List of directories you can @import from
+    # @option options [Array<String>] :libs
+    #   List of libraries to require
     # @option options [Boolean] :shallow
     #   Whether to output nested directories
     # @option options [Boolean] :line_numbers
@@ -71,6 +74,12 @@ module Guard
 
       options[:load_paths] += load_paths
       options[:load_paths].flatten!
+
+      libs = options.delete(:libs) || []
+      options[:libs] = [*libs]
+      options[:libs].each do |lib|
+        require lib
+      end
 
       @runner = Runner.new(watchers, options)
       super(watchers, options)

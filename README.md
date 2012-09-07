@@ -42,6 +42,16 @@ If your output directory is the same as the input directory, you can simply skip
 
     guard 'sass', :input => 'styles'
 
+If you want to require a ruby library that extend sass, use the `:libs` option:
+
+    guard 'sass', :input => 'styles', :libs => './styles/bourbon/lib/bourbon.rb'
+
+or for multiple libs:
+
+    guard 'sass', :input => 'styles',
+                  :libs => %w(./styles/bourbon/lib/bourbon.rb
+                              ./styles/stereoscopy/lib/stereoscopy.rb')
+
 ### Rails App With the Asset Pipeline
 
 With the introduction of the [asset pipeline][rpipe] in Rails 3.1 there is no
