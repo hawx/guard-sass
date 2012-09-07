@@ -42,7 +42,7 @@ If your output directory is the same as the input directory, you can simply skip
 
     guard 'sass', :input => 'styles'
 
-If you want to require a ruby library that extend sass, use the `:libs` option:
+If you want to require a ruby library that extends sass, use the `:libs` option:
 
     guard 'sass', :input => 'styles', :libs => './styles/bourbon/lib/bourbon.rb'
 
