@@ -10,7 +10,10 @@ html {
 
 .error.intrusion, .intrusion.badError {
   font-size: 1.3em;
-  font-weight: bold; }
+  font-weight: bold;
+  -webkit-box-shadow: 0 0 1px 1px black;
+  -moz-box-shadow: 0 0 1px 1px black;
+  box-shadow: 0 0 1px 1px black; }
 
 .badError {
   border-width: 3px; }
