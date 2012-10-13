@@ -78,6 +78,7 @@ module Guard
         content = IO.read(file)
 
         sass_options = {
+          :filename     => file,
           :syntax       => file[-4..-1].to_sym,
           :load_paths   => options[:load_paths],
           :style        => options[:style],
