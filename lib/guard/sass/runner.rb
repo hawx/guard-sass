@@ -75,8 +75,6 @@ module Guard
       # @param file [String] Path to sass/scss file to compile
       # @return [String] Compiled css.
       def compile(file)
-        content = IO.read(file)
-
         sass_options = {
           :filename     => file,
           :syntax       => file[-4..-1].to_sym,
@@ -85,7 +83,8 @@ module Guard
           :debug_info   => options[:debug_info],
           :line_numbers => options[:line_numbers]
         }
-        ::Sass::Engine.new(content, sass_options).render
+
+        ::Sass::Engine.for_file(file, sass_options).render
       end
 
       # @param file [String]
