@@ -1,3 +1,4 @@
+require 'sass'
 require 'sass/plugin'
 
 require 'guard'
@@ -95,44 +96,22 @@ module Guard
       run_on_changes files.reject {|f| partial?(f) }
     end
 
-    def resolve_partials_to_owners(paths, depth = 0)
-      # If we get more than 10 levels of includes deep, we're probably in an
-      # import loop.
-      return run_all if depth > 10
-
+    def resolve_partials_to_owners(paths)
       # Get all files that might have imports
-      root = options[:input]
-      root += '/' unless root.end_with?('/')
+      search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
+      search_files = Watcher.match_files(self, search_files)
 
-      partials  = paths.find_all {|f| partial?(f) }
-      paths    -= partials
-      sub_paths = partials.map {|p|
-        # Remove root, need relative paths
-        p.sub(/^#{root}/, '')
-      }.map {|p|
-        # Make version without underscores
-        [p, p.gsub(/(\/|^)_/, '\\1')]
-      }.map {|ps|
-        # For each of those, make a version with extensions
-        ps.map {|p|
-          [p, p.gsub(/\.s[ac]ss$/, '')]
-        }
-      }.flatten
-
-      # Search through all eligible files and find those we need to recompile
-      joined_paths = sub_paths.map {|p| Regexp.escape(p) }.join('|')
-      matcher = /@import.*(:?#{joined_paths})/
-      importing = files.find_all {|file| open(file, 'r').read.match(matcher) }
-      paths += importing
-
-      # If any of the matched files were partials, then go ahead and walk up the
-      # import tree
-      if paths.any? {|f| partial?(f) }
-        paths = resolve_partials_to_owners(paths, depth + 1)
+      # Get owners
+      owners = search_files.select do |file|
+         # Get dependencies of file
+         deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
+         # Find intersection with paths
+         deps_in_paths = deps.intersection paths
+         # Any paths in the dependencies?
+         !deps_in_paths.empty?
       end
-
       # Return our resolved set of paths to recompile
-      paths
+      owners
     end
 
     def run_with_partials(paths)
