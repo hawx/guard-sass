@@ -4,7 +4,8 @@ describe Guard::Sass do
 
   subject { ::Guard::Sass.new }
 
-  let(:runner) { Guard::Sass::Runner.new([]) }
+  let(:formatter) { Guard::Sass::Formatter.new }
+  let(:runner) { Guard::Sass::Runner.new([], formatter) }
 
   before do
     subject.instance_variable_set :@runner, runner

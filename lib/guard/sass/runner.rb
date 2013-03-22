@@ -20,7 +20,7 @@ module Guard
       # @param files [Array<String>]
       # @return [Array<Array,Boolean>]
       def run(files)
-        changed_files, errors =  compile_files(files)
+        changed_files, errors = compile_files(files)
         [changed_files, errors.empty?]
       end
 
