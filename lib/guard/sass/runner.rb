@@ -9,11 +9,12 @@ module Guard
       attr_reader :options
 
       # @param watchers [Array<Guard::Watcher>]
+      # @param formatter [Guard::Sass::Formatter]
       # @param options [Hash] See Guard::Sass::DEFAULTS for available options
-      def initialize(watchers, options={})
+      def initialize(watchers, formatter, options={})
         @watchers  = watchers
+        @formatter = formatter
         @options   = options
-        @formatter = Formatter.new(:hide_success => options[:hide_success])
       end
 
       # @param files [Array<String>]
@@ -81,7 +82,7 @@ module Guard
           :debug_info   => options[:debug_info],
           :line_numbers => options[:line_numbers]
         }
-
+        
         ::Sass::Engine.for_file(file, sass_options).render
       end
 

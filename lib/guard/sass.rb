@@ -73,7 +73,8 @@ module Guard
       options[:load_paths] += load_paths
       options[:load_paths].flatten!
 
-      @runner = Runner.new(watchers, options)
+      @formatter = Formatter.new(:hide_success => options[:hide_success])
+      @runner = Runner.new(watchers, @formatter, options)
       super(watchers, options)
     end
 
@@ -103,13 +104,22 @@ module Guard
 
       # Get owners
       owners = search_files.select do |file|
-         # Get dependencies of file
-         deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
+        deps = []
+         begin
+           # Get dependencies of file
+           deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
+           
+         rescue ::Sass::SyntaxError => e
+           message = "Resolving partial owners of #{file} failed"
+           @formatter.error "Sass > #{e.sass_backtrace_str(file)}", :notification => message
+         end
+         
          # Find intersection with paths
          deps_in_paths = deps.intersection paths
          # Any paths in the dependencies?
          !deps_in_paths.empty?
       end
+      
       # Return our resolved set of paths to recompile
       owners
     end
@@ -134,7 +144,7 @@ module Guard
 
       changed_files, success = @runner.run(paths)
       notify changed_files
-
+      
       throw :task_has_failed unless success
     end
 
