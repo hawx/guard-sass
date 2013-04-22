@@ -146,8 +146,8 @@ describe Guard::Sass do
 
       Guard::Watcher.stub(:match_files).with(subject, ['a.css']).and_return([])
       Guard::Watcher.stub(:match_files).with(dummy_guard, ['a.css']).and_return(['a.css'])
-      subject.should_not_receive(:run_on_change)
-      dummy_guard.should_receive(:run_on_change).with(['a.css'])
+      subject.should_not_receive(:run_on_changes)
+      dummy_guard.should_receive(:run_on_changes).with(['a.css'])
 
       subject.notify(['a.css'])
     end
