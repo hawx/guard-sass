@@ -4,7 +4,13 @@
 #  watch %r{^scss/(.*)}
 #end
 
-guard 'sass', :input          => '_sass', 
+guard 'sass', :input          => '_sass',
               :output         => 'css',
               :smart_partials => true,
               :compass        => true
+
+guard 'shell' do
+  watch %r{.*\.css} do |path|
+    puts "Wrote #{path}"
+  end
+end

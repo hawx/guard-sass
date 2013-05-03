@@ -8,3 +8,4 @@ end
 gem 'compass'
 gem 'guard', '>= 1.1.0'
 gem 'guard-sass', :path => '../'
+gem 'guard-shell'
