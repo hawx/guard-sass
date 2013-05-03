@@ -108,18 +108,18 @@ module Guard
          begin
            # Get dependencies of file
            deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
-           
+
          rescue ::Sass::SyntaxError => e
            message = "Resolving partial owners of #{file} failed"
            @formatter.error "Sass > #{e.sass_backtrace_str(file)}", :notification => message
          end
-         
+
          # Find intersection with paths
          deps_in_paths = deps.intersection paths
          # Any paths in the dependencies?
          !deps_in_paths.empty?
       end
-      
+
       # Return our resolved set of paths to recompile
       owners
     end
@@ -143,8 +143,7 @@ module Guard
       return run_with_partials(paths) if paths.any? {|f| partial?(f) }
 
       changed_files, success = @runner.run(paths)
-      notify changed_files
-      
+
       throw :task_has_failed unless success
     end
 
@@ -152,17 +151,6 @@ module Guard
     # {#run_on_changes}.
     def run_on_removals(paths)
 
-    end
-
-    # Notify other guards about files that have been changed so that other guards can
-    # work on the changed files.
-    #
-    # @param changed_files [Array<String>]
-    def notify(changed_files)
-      ::Guard.guards.each do |guard|
-        paths = Watcher.match_files(guard, changed_files)
-        guard.run_on_changes(paths) unless paths.empty?
-      end
     end
 
     # @return Whether +path+ is a partial

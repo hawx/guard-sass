@@ -97,7 +97,6 @@ describe Guard::Sass do
 
     before do
       Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
-      subject.stub :notify
     end
 
     it 'calls #run_on_changes with all watched files' do
@@ -108,8 +107,6 @@ describe Guard::Sass do
 
   describe '#run_on_changes' do
     subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
-
-    before { subject.stub :notify }
 
     context 'if paths given contain partials' do
       it 'calls #run_all' do
@@ -130,26 +127,6 @@ describe Guard::Sass do
     it 'starts the Runner' do
       runner.should_receive(:run).with(['a.sass']).and_return([nil, true])
       subject.run_on_changes(['a.sass'])
-    end
-
-    it 'notifies the other guards about changed files' do
-      runner.stub(:run).and_return([['a.css', 'b.css'], true])
-      subject.should_receive(:notify).with(['a.css', 'b.css'])
-      subject.run_on_changes(['a.sass', 'b.scss'])
-    end
-  end
-
-  describe '#notify' do
-    it 'notifies other guards' do
-      dummy_guard = mock(Guard::Guard)
-      ::Guard.stub(:guards).and_return([dummy_guard, subject])
-
-      Guard::Watcher.stub(:match_files).with(subject, ['a.css']).and_return([])
-      Guard::Watcher.stub(:match_files).with(dummy_guard, ['a.css']).and_return(['a.css'])
-      subject.should_not_receive(:run_on_changes)
-      dummy_guard.should_receive(:run_on_changes).with(['a.css'])
-
-      subject.notify(['a.css'])
     end
   end
 
