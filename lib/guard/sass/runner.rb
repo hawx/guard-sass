@@ -82,7 +82,7 @@ module Guard
           :debug_info   => options[:debug_info],
           :line_numbers => options[:line_numbers]
         }
-        
+
         ::Sass::Engine.for_file(file, sass_options).render
       end
 
@@ -112,7 +112,7 @@ module Guard
       # @param file [String] Name of the file
       # @return [String] Path of file written
       def write_file(content, dir, file)
-        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, '.css')
+        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, options[:extension])
         path = File.join(dir, filename)
 
         unless options[:noop]

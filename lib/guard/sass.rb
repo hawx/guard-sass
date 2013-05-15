@@ -27,6 +27,8 @@ module Guard
     #   The input directory
     # @option options [String] :output
     #   The output directory
+    # @option options [String] :extension
+    #   The extension to replace the '.s[ac]ss' part of the file name with
     # @option options [Array<String>] :load_paths
     #   List of directories you can @import from
     # @option options [Boolean] :shallow
