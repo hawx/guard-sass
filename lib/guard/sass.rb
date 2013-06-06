@@ -56,16 +56,16 @@ module Guard
       if compass = options.delete(:compass)
         require 'compass'
         compass = {} unless compass.is_a?(Hash)
-
-        Compass.add_project_configuration
+        
         Compass.configuration.project_path   ||= Dir.pwd
-        Compass.configuration.images_dir       = compass[:images_dir]       || "app/assets/images"
-        Compass.configuration.images_path      = compass[:images_path]      || File.join(Dir.pwd, "app/assets/images")
-        Compass.configuration.http_images_path = compass[:http_images_path] || "/assets"
-        Compass.configuration.http_images_dir  = compass[:http_images_dir]  || "/assets"
-
-        Compass.configuration.http_fonts_path  = compass[:http_fonts_path]  || "/assets"
-        Compass.configuration.http_fonts_dir   = compass[:http_fonts_dir]   || "/assets"
+        
+        compass.each do |key, value|
+          Compass.configuration.send("#{key}=".to_sym, value)
+          
+          if key.to_s.include?('dir') && !key.to_s.include?('http')
+            options[:load_paths] << value
+          end
+        end
 
         Compass.configuration.asset_cache_buster = Proc.new {|*| {:query => Time.now.to_i} }
         options[:load_paths] ||= []
