@@ -56,12 +56,12 @@ module Guard
       if compass = options.delete(:compass)
         require 'compass'
         compass = {} unless compass.is_a?(Hash)
-        
+
         Compass.configuration.project_path   ||= Dir.pwd
-        
+
         compass.each do |key, value|
           Compass.configuration.send("#{key}=".to_sym, value)
-          
+
           if key.to_s.include?('dir') && !key.to_s.include?('http')
             options[:load_paths] << value
           end
