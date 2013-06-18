@@ -15,7 +15,6 @@ describe Guard::Sass::Runner do
     Guard.stub(:listener).and_return stub('Listener')
   end
 
-
   describe '#run' do
 
     it 'returns a list of changed files' do
@@ -63,12 +62,13 @@ describe Guard::Sass::Runner do
 
       mock_engine = mock(::Sass::Engine)
       ::Sass::Engine.should_receive(:new).with('', {
-        :load_paths => ['sass'],
-        :style => :nested, 
-        :debug_info => false,
-        :line_numbers => false,
-        :syntax => :sass,
-        :filename => "a.sass"
+        :filesystem_importer => Guard::Sass::Importer,
+        :load_paths          => ['sass'],
+        :style               => :nested,
+        :debug_info          => false,
+        :line_numbers        => false,
+        :syntax              => :sass,
+        :filename            => 'a.sass'
       }).and_return(mock_engine)
       mock_engine.should_receive(:render)
 
