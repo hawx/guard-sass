@@ -77,10 +77,11 @@ module Guard
       # @return [String] Compiled css.
       def compile(file)
         sass_options = {
-          :load_paths   => options[:load_paths],
-          :style        => options[:style],
-          :debug_info   => options[:debug_info],
-          :line_numbers => options[:line_numbers]
+          :filesystem_importer => Importer,
+          :load_paths          => options[:load_paths],
+          :style               => options[:style],
+          :debug_info          => options[:debug_info],
+          :line_numbers        => options[:line_numbers]
         }
 
         ::Sass::Engine.for_file(file, sass_options).render
@@ -125,3 +126,5 @@ module Guard
     end
   end
 end
+
+require 'guard/sass/importer'
