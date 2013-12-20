@@ -109,22 +109,13 @@ The following options can be passed to guard-sass:
     :shallow => true                    # Do not create nested output directories.
                                         # default: false
 
-    :style => :nested                   # Controls the output style. Accepted options are :nested,
-                                        # :compact, :compressed and :expanded
-                                        # default: :nested
-
-    :load_paths => ['sass/partials']    # Paths for sass to find imported sass files from.
-                                        # default: template locations provided by the sass gem
-
     :noop => true                       # No operation: Do not write output file
                                         # default: false
 
-    :line_numbers => true               # Add human readable source filname and line number
-                                        # information as comments.
-                                        # default: false
+As well as any option that sass itself can take (eg. `:style => :compact`). See
+[the reference](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#options)
+for a list.
 
-    :debug_info => true                 # File and line number info for FireSass.
-                                        # default: false
 
 ### Output Short Notation
 
