@@ -78,11 +78,7 @@ module Guard
       def compile(file)
         sass_options = {
           :filesystem_importer => Importer,
-          :load_paths          => options[:load_paths],
-          :style               => options[:style],
-          :debug_info          => options[:debug_info],
-          :line_numbers        => options[:line_numbers]
-        }
+        }.merge(options)
 
         ::Sass::Engine.for_file(file, sass_options).render
       end
