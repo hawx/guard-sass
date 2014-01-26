@@ -18,7 +18,8 @@ module Guard
       :debug_info   => false,
       :noop         => false,
       :hide_success => false,
-      :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
+      :load_paths   => ::Sass::Plugin.template_location_array.map(&:first),
+      :require      => false
     }
 
     # @param watchers [Array<Guard::Watcher>]
@@ -41,11 +42,24 @@ module Guard
     #   Whether to run in "asset pipe" mode, no ouput, just validation
     # @option options [Boolean] :hide_success
     #   Whether to hide all success messages
+    # @option options [Array<String>] :require
+    #   List of libraries to require
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
     def initialize(watchers=[], options={})
       load_paths = options.delete(:load_paths) || []
 
+      # If [Array<String>] set, load in required libraries.
+      if options[:require]
+        if options[:require].kind_of?(Array)
+          for library in options[:require]
+            require '#{library}'
+          end
+        else
+          require options[:require]
+        end
+      end
+      
       if options[:input]
         load_paths << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
