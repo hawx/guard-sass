@@ -139,12 +139,17 @@ module Guard
     # '_'), calls {#run_with_partials} so that files which include it are
     # rebuilt.
     #
+    # Fires a `:run_on_changes_end` hook with a `changed_files` array and
+    # a `success` bool as parameters.
+    #
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
     def run_on_changes(paths)
       return run_with_partials(paths) if paths.any? {|f| partial?(f) }
 
       changed_files, success = @runner.run(paths)
+
+      hook :end, Array(changed_files), success
 
       throw :task_has_failed unless success
     end
