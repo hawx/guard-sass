@@ -59,6 +59,10 @@ describe Guard::Sass do
         subject.watchers.first.pattern.should == %r{^app/styles/(.+\.s[ac]ss)$}
       end
 
+      it 'sets the load_paths directory' do
+        subject.options[:load_paths].should == ['app/styles']
+      end
+
       context 'without an output option' do
         it 'sets the output directory to the input directory' do
           subject.options[:output].should == 'app/styles'
