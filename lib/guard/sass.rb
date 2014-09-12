@@ -44,10 +44,9 @@ module Guard
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
     def initialize(watchers=[], options={})
-      load_paths = options.delete(:load_paths) || []
-
       if options[:input]
-        load_paths << options[:input]
+        options[:load_paths] ||= []
+        options[:load_paths] << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
         watchers << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
       end
@@ -72,7 +71,6 @@ module Guard
         options[:load_paths] << Compass.configuration.sass_load_paths
       end
 
-      options[:load_paths] += load_paths
       options[:load_paths].flatten!
 
       @formatter = Formatter.new(:hide_success => options[:hide_success])
