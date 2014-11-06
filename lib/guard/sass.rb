@@ -6,7 +6,7 @@ require 'guard/guard'
 require 'guard/watcher'
 
 module Guard
-  class Sass < Guard
+  class Sass < Plugin
 
     DEFAULTS = {
       :all_on_start => false,
@@ -21,7 +21,6 @@ module Guard
       :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
     }
 
-    # @param watchers [Array<Guard::Watcher>]
     # @param options [Hash]
     # @option options [String] :input
     #   The input directory
@@ -43,7 +42,7 @@ module Guard
     #   Whether to hide all success messages
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
-    def initialize(watchers=[], options={})
+    def initialize(options={})
       load_paths = options.delete(:load_paths) || []
 
       if options[:input]
@@ -77,7 +76,7 @@ module Guard
 
       @formatter = Formatter.new(:hide_success => options[:hide_success])
       @runner = Runner.new(watchers, @formatter, options)
-      super(watchers, options)
+      super(options)
     end
 
     # @return [Array<String>] Paths of all sass/scss files
