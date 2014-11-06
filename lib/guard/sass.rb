@@ -2,7 +2,7 @@ require 'sass'
 require 'sass/plugin'
 
 require 'guard'
-require 'guard/guard'
+require 'guard/plugin'
 require 'guard/watcher'
 
 module Guard
