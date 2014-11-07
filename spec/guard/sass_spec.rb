@@ -23,13 +23,16 @@ describe Guard::Sass do
 
     context 'when options given' do
       subject {
+        Guard::Sass::DEFAULTS[:load_paths] = ['sass']
+
         opts = {
           :noop         => true,
           :hide_success => true,
           :style        => :compact,
-          :line_numbers => true
+          :line_numbers => true,
+          :watchers     => []
         }
-        Guard::Sass.new([], opts)
+        Guard::Sass.new(opts)
       }
 
       it 'merges them with defaults' do
@@ -43,13 +46,13 @@ describe Guard::Sass do
           :noop         => true,
           :hide_success => true,
           :line_numbers => true,
-          :load_paths   => ::Sass::Plugin.template_location_array.map(&:first)
+          :load_paths   => ['sass']
         }
       end
     end
 
     context 'with an :input option' do
-      subject { Guard::Sass.new([], {:input => 'app/styles'}) }
+      subject { Guard::Sass.new(watchers: [], input: 'app/styles') }
 
       it 'creates a watcher' do
         subject.should have(1).watchers
@@ -66,7 +69,7 @@ describe Guard::Sass do
       end
 
       context 'with an output option' do
-        subject { Guard::Sass.new([], {:input => 'app/styles', :output => 'public/styles'}) }
+        subject { Guard::Sass.new(input: 'app/styles', output: 'public/styles', watchers: []) }
 
         it 'uses the output directory' do
           subject.options[:output].should == 'public/styles'
@@ -83,7 +86,7 @@ describe Guard::Sass do
     end
 
     context ':all_on_start option is true' do
-      subject { Guard::Sass.new [], :all_on_start => true }
+      subject { Guard::Sass.new(watchers: [], all_on_start: true) }
 
       it 'calls #run_all' do
         subject.should_receive(:run_all)
@@ -93,7 +96,7 @@ describe Guard::Sass do
   end
 
   describe '#run_all' do
-    subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
 
     before do
       Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
@@ -106,7 +109,7 @@ describe Guard::Sass do
   end
 
   describe '#run_on_changes' do
-    subject { Guard::Sass.new([Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
 
     context 'if paths given contain partials' do
       it 'calls #run_all' do

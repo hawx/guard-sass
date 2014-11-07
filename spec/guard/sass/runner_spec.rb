@@ -57,7 +57,6 @@ describe Guard::Sass::Runner do
     end
 
     it 'compiles the files' do
-      a = Guard::Sass::DEFAULTS[:load_paths]
       Guard::Sass::DEFAULTS[:load_paths] = ['sass']
 
       mock_engine = mock(::Sass::Engine)
@@ -68,13 +67,17 @@ describe Guard::Sass::Runner do
         :debug_info          => false,
         :line_numbers        => false,
         :syntax              => :sass,
-        :filename            => 'a.sass'
+        :filename            => 'a.sass',
+        :all_on_start        => false,
+        :output              => "css",
+        :extension           => ".css",
+        :shallow             => false,
+        :noop                => false,
+        :hide_success        => false
       }).and_return(mock_engine)
       mock_engine.should_receive(:render)
 
       subject.new([watcher], formatter, defaults).run(['a.sass'])
-
-      Guard::Sass::DEFAULTS[:load_paths] = a
     end
 
   end
