@@ -48,7 +48,7 @@ module Guard
       if options[:input]
         load_paths << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
+        options[:watchers] << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
       end
       options = DEFAULTS.merge(options)
 
@@ -75,7 +75,7 @@ module Guard
       options[:load_paths].flatten!
 
       @formatter = Formatter.new(:hide_success => options[:hide_success])
-      @runner = Runner.new(watchers, @formatter, options)
+      @runner = Runner.new(options[:watchers], @formatter, options)
       super(options)
     end
 
