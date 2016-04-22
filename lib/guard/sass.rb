@@ -10,6 +10,7 @@ module Guard
 
     DEFAULTS = {
       :all_on_start => false,
+      :filter => /.*/,
       :output       => 'css',
       :extension    => '.css',
       :style        => :nested,
@@ -24,6 +25,8 @@ module Guard
     # @param options [Hash]
     # @option options [String] :input
     #   The input directory
+    # @option options [Regexp] :filter
+    #   The Regexp to filter files to compile
     # @option options [String] :output
     #   The output directory
     # @option options [String] :extension
@@ -95,7 +98,7 @@ module Guard
     #
     # @raise [:task_has_failed]
     def run_all
-      run_on_changes files.reject {|f| partial?(f) }
+      run_on_changes files.reject {|f| partial?(f) || !(f =~ options[:filter])}
     end
 
     def resolve_partials_to_owners(paths)

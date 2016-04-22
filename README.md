@@ -86,6 +86,9 @@ The following options can be passed to guard-sass:
                                         # A suffix `/(.+\.s[ac]ss)` will be added to this option.
                                         # default: nil
 
+    :filter => /.*/                     # Regexp to filter files to compile.
+                                        # default: `/.*/`
+
     :output => 'stylesheets'            # Relative path to the output directory.
                                         # default: 'css' or the :input option when supplied
 
