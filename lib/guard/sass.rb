@@ -40,6 +40,8 @@ module Guard
     #   Whether to run in "asset pipe" mode, no ouput, just validation
     # @option options [Boolean] :hide_success
     #   Whether to hide all success messages
+    # @option options [Boolean] :always_resolve_dependencies
+    #   Whether to resolve dependencies for all files, not just partials
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
     def initialize(options={})
@@ -98,13 +100,8 @@ module Guard
       run_on_changes files.reject {|f| partial?(f) }
     end
 
-    def resolve_partials_to_owners(paths)
-      # Get all files that might have imports
-      search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
-      search_files = Watcher.match_files(self, search_files)
-
-      # Get owners
-      owners = search_files.select do |file|
+    def resolve_to_owners(paths)
+      owners = files.select do |file|
         deps = []
          begin
            # Get dependencies of file
@@ -125,15 +122,6 @@ module Guard
       owners
     end
 
-    def run_with_partials(paths)
-      if options[:smart_partials]
-        paths = resolve_partials_to_owners(paths)
-        run_on_changes Watcher.match_files(self, paths) unless paths.nil?
-      else
-        run_all
-      end
-    end
-
     # Builds the files given. If a 'partial' file is found (name begins with
     # '_'), calls {#run_with_partials} so that files which include it are
     # rebuilt.
@@ -144,8 +132,27 @@ module Guard
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
     def run_on_changes(paths)
-      return run_with_partials(paths) if paths.any? {|f| partial?(f) }
+      if paths.any? {|f| partial?(f) }
+        if options[:smart_partials]
+          paths = resolve_to_owners(paths)
+          __run_paths paths
+          return
+        end
 
+        run_all
+        return
+      end
+
+      if options[:always_resolve_dependencies]
+        paths = resolve_to_owners(paths) + paths
+        __run_paths paths
+        return
+      end
+
+      __run_paths paths
+    end
+
+    def __run_paths(paths)
       changed_files, success = @runner.run(paths)
 
       hook :end, Array(changed_files), success

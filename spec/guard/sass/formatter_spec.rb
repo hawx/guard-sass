@@ -5,7 +5,13 @@ describe Guard::Sass::Formatter do
   subject { Guard::Sass::Formatter }
 
   let(:notifier) { Guard::Notifier }
-  let(:ui) { Guard::UI }
+
+  let(:ui) {
+    ::Guard::UI.stub(:error)
+    ::Guard::UI.stub(:info)
+
+    ::Guard::UI
+  }
 
   describe '#success' do
     context 'if success is to be shown' do
@@ -15,9 +21,9 @@ describe Guard::Sass::Formatter do
       end
 
       it 'shows a system notification' do
-        f = subject.new
-        f.should_receive(:notify).with("Yay", :image => :success)
-        f.success("Success message", :notification => "Yay")
+        ui.should_receive(:info).with("\t\e[1;37mSass\e[0m Success message", notification: 'Yay')
+        notifier.should_receive(:notify).with('Yay', title: 'Guard::Sass', image: :success)
+        subject.new.success("Success message", notification: "Yay")
       end
     end
 
@@ -36,9 +42,9 @@ describe Guard::Sass::Formatter do
     end
 
     it 'shows a system notification' do
-      f = subject.new
-      f.should_receive(:notify).with("Boo", :image => :failed)
-      f.error("Error message", :notification => "Boo")
+      ui.should_receive(:error).with('[Sass] Error message', notification: 'Boo')
+      notifier.should_receive(:notify).with('Boo', title: 'Guard::Sass', image: :failed)
+      subject.new.error("Error message", notification: "Boo")
     end
   end
 
