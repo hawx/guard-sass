@@ -83,7 +83,7 @@ the `:extension` option like so:
 The following options can be passed to guard-sass:
 
     :input => 'sass'                    # Relative path to the input directory.
-                                        # A suffix `/(.+\.s[ac]ss)` will be added to this option.
+                                        # A suffix of `/(.+\.s[ac]ss)` will be added to this option.
                                         # default: nil
 
     :output => 'stylesheets'            # Relative path to the output directory.
@@ -92,16 +92,10 @@ The following options can be passed to guard-sass:
     :all_on_start => true               # Compiles all sass files on start
                                         # default: false
 
-    :compass => true                    # Enable Compass support with default options. You can
-                                        # overwrite any of these options by passing a hash. For
-                                        # the options available see the Compass reference here:
-                                        # http://compass-style.org/help/tutorials/configuration-reference/
-
-    :smart_partials => true             # Causes guard-sass to do dependency resolution and only
-                                        # recompile the files that need it when you update partials.
-                                        # If not on, then guard-sass will update all files when a
-                                        # partial is changed.
-                                        # default: false
+    :resolve => :none                   # Never attempt to compile files dependent on the changed file.
+    :resolve => :partials               # When a partial is changed compile all files dependent on it.
+    :resolve => :all                    # When any files is changed, compile all files dependent on it.
+                                        # default: :partials
 
     :hide_success => true               # Disable successful compilation messages.
                                         # default: false

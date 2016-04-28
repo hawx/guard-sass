@@ -123,4 +123,66 @@ describe Guard::Sass::Runner do
 
   end
 
+  describe '#owners' do
+    let(:opts) { stub }
+    let(:formatter) { mock(::Guard::Sass::Formatter) }
+
+    let(:deps) {
+      {
+        'a.sass' => %w(),
+        'b.scss' => %w(a.sass),
+        'c.sass' => %w(a.sass),
+        '_p.sass' => %w(),
+        '_q.scss' => %w(_p.sass)
+      }
+    }
+
+    let(:all_files) { deps.keys }
+    let(:files_to_check) { %w(a.sass _p.sass) }
+
+    it 'returns a list of files that import the files' do
+      deps.each do |input, output|
+        stubs = output.collect {|o| stub(options: {filename: o}) }
+
+        ::Sass::Engine
+          .should_receive(:for_file)
+          .with(input, opts)
+          .and_return(stub(dependencies: stubs))
+      end
+
+      result = subject.new([], formatter, opts).owners(all_files, files_to_check)
+      result.should eq %w(b.scss c.sass _q.scss)
+    end
+
+    context 'when error getting dependencies' do
+      before do
+        deps.each do |input, output|
+          stubs = output.collect {|o| stub(options: {filename: o}) }
+
+          if input == '_q.scss'
+            ::Sass::Engine
+              .should_receive(:for_file)
+              .with(input, opts)
+              .and_raise(::Sass::SyntaxError.new('bad'))
+          else
+            ::Sass::Engine
+              .should_receive(:for_file)
+              .with(input, opts)
+              .and_return(stub(dependencies: stubs))
+          end
+        end
+      end
+
+      it 'ignores the errored file and displays the error' do
+        formatter
+          .should_receive(:error)
+          .with("Sass > Error: bad\n        on line  of _q.scss",
+                notification: "Resolving partial owners of _q.scss failed")
+
+        result = subject.new([], formatter, opts).owners(all_files, files_to_check)
+        result.should eq %w(b.scss c.sass)
+      end
+    end
+  end
+
 end

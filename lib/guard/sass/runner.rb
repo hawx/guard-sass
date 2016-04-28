@@ -24,6 +24,23 @@ module Guard
         [changed_files, errors.empty?]
       end
 
+      def owners(all_files, files_to_check)
+        all_files.select do |file|
+          begin
+            deps = ::Sass::Engine.for_file(file, @options)
+                   .dependencies
+                   .collect {|dep| dep.options[:filename] }
+
+            (deps & files_to_check).any?
+
+          rescue ::Sass::SyntaxError => e
+            message = "Resolving partial owners of #{file} failed"
+            @formatter.error "Sass > #{e.sass_backtrace_str(file)}", notification: message
+            false
+          end
+        end
+      end
+
       private
 
       # @param files [Array<String>] Files to compile
