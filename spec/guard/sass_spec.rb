@@ -2,19 +2,17 @@ require 'spec_helper'
 
 describe Guard::Sass do
 
-  subject { ::Guard::Sass.new }
+  subject { ::Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
 
-  let(:formatter) { Guard::Sass::Formatter.new }
-  let(:runner) { Guard::Sass::Runner.new([], formatter) }
+  let(:formatter) { mock(::Guard::Sass::Formatter) }
+  let(:runner)    { mock(::Guard::Sass::Runner) }
 
   before do
     subject.instance_variable_set :@runner, runner
-    runner.stub :run
-    Guard.stub(:listener).and_return stub('Listener')
+    subject.instance_variable_set :@formatter, formatter
   end
 
   describe '#initialize' do
-
     context 'when no options given' do
       it 'uses defaults' do
         subject.options.should == Guard::Sass::DEFAULTS
@@ -86,7 +84,7 @@ describe Guard::Sass do
     end
 
     context ':all_on_start option is true' do
-      subject { Guard::Sass.new(watchers: [], all_on_start: true) }
+      subject { Guard::Sass.new(all_on_start: true) }
 
       it 'calls #run_all' do
         subject.should_receive(:run_all)
@@ -96,67 +94,58 @@ describe Guard::Sass do
   end
 
   describe '#run_all' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
-
-    before do
-      Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
-    end
+    before { Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc'] }
 
     it 'calls #run_on_changes with all watched files' do
-      subject.should_receive(:run_on_changes).with(['a.sass', 'b.scss'])
+      subject.should_receive(:__run_paths).with(['a.sass', 'b.scss'])
       subject.run_all
     end
   end
 
   describe '#run_on_changes' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
+    before { Dir.stub(:[]).and_return ['a.sass', 'b.scss', '_p.sass'] }
 
-    context 'if paths given contain partials' do
-      it 'calls #run_all' do
-        subject.should_receive(:run_all)
-        subject.run_on_changes(['sass/_partial.sass'])
+    context 'if paths contain partials' do
+      it 'compiles all non-partials' do
+        subject
+          .should_receive(:__run_paths)
+          .with(['a.sass', 'b.scss'])
+
+        subject.run_on_changes(['_p.sass'])
       end
 
-      context "and :smart_partials is given" do
-        before { subject.options[:smart_partials] = true  }
-        after  { subject.options[:smart_partials] = false }
+      context "and resolve is set to :partials" do
+        before { subject.options[:resolve] = :partials }
 
-        it 'calls #resolve_to_owners' do
-          paths = ['sass/_partial.sass']
-          resolved_paths = ['a', 'b']
-
-          subject
-            .should_receive(:resolve_to_owners)
-            .with(paths)
-            .and_return(resolved_paths)
+        it 'compiles all non-partials and any files that include the partials' do
+          runner
+            .should_receive(:owners)
+            .with(['_p.sass'])
+            .and_return(['a.sass'])
 
           subject
             .should_receive(:__run_paths)
-            .with(resolved_paths)
+            .with(['b.scss', 'a.sass'])
 
-          subject.run_on_changes(paths)
+          subject.run_on_changes(['_p.sass', 'b.scss'])
         end
       end
     end
 
-    context 'when :always_resolve_dependencies is true' do
-      before { subject.options[:always_resolve_dependencies] = true }
-      after  { subject.options[:always_resolve_dependencies] = false }
+    context 'when resolve is set to :all' do
+      before { subject.options[:resolve] = :all }
 
       it 'compiles all changed and dependent files ' do
-        paths = ['a', 'b']
-        resolved_paths = ['c', 'd']
-
-        subject
-          .should_receive(:resolve_to_owners)
-          .with(paths)
-          .and_return(resolved_paths)
+        runner
+          .should_receive(:owners)
+          .with(['b.scss'])
+          .and_return(['a.sass', '_p.sass'])
 
         subject
           .should_receive(:__run_paths)
-          .with(resolved_paths + paths)
+          .with(['b.scss', 'a.sass'])
 
-        subject.run_on_changes(paths)
+        subject.run_on_changes(['b.scss'])
       end
     end
 

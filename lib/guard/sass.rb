@@ -24,26 +24,45 @@ module Guard
     # @param options [Hash]
     # @option options [String] :input
     #   The input directory
+    #
     # @option options [String] :output
     #   The output directory
+    #
     # @option options [String] :extension
     #   The extension to replace the '.s[ac]ss' part of the file name with
+    #
     # @option options [Array<String>] :load_paths
     #   List of directories you can @import from
+    #
     # @option options [Boolean] :shallow
     #   Whether to output nested directories
+    #
     # @option options [Boolean] :line_numbers
     #   Whether to output human readable line numbers as comments in the file
+    #
     # @option options [Boolean] :debug_info
     #   Whether to output file and line number info for FireSass
+    #
     # @option options [Boolean] :noop
     #   Whether to run in "asset pipe" mode, no ouput, just validation
+    #
     # @option options [Boolean] :hide_success
     #   Whether to hide all success messages
-    # @option options [Boolean] :always_resolve_dependencies
-    #   Whether to resolve dependencies for all files, not just partials
+    #
+    # @option options [Boolean] :resolve
+    #   Choose when to resolve dependencies to the changed file.
+    #
+    #   When set to :none, only changed files are compiled.
+    #
+    #   When set to :partials, if a partial is changed any files using that
+    #   partial will be recompiled.
+    #
+    #   When set to :all, when any file is changed it will trigger compilation
+    #   of any other file that includes it.
+    #
     # @option options [Symbol] :style
     #   See http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#output_style
+    #
     def initialize(options={})
       load_paths = options.delete(:load_paths) || []
 
@@ -54,27 +73,10 @@ module Guard
       end
       options = DEFAULTS.merge(options)
 
-      if compass = options.delete(:compass)
-        require 'compass'
-        compass = {} unless compass.is_a?(Hash)
-
-        Compass.configuration.project_path   ||= Dir.pwd
-
-        compass.each do |key, value|
-          Compass.configuration.send("#{key}=".to_sym, value)
-
-          if key.to_s.include?('dir') && !key.to_s.include?('http')
-            options[:load_paths] << value
-          end
-        end
-
-        Compass.configuration.asset_cache_buster = Proc.new {|*| {:query => Time.now.to_i} }
-        options[:load_paths] ||= []
-        options[:load_paths] << Compass.configuration.sass_load_paths
-      end
-
       options[:load_paths] += load_paths
       options[:load_paths].flatten!
+
+      options[:resolve] ||= :partials if options.has_key?(:smart_partials)
 
       @formatter = Formatter.new(:hide_success => options[:hide_success])
       @runner = Runner.new(options[:watchers], @formatter, options)
@@ -97,34 +99,17 @@ module Guard
     #
     # @raise [:task_has_failed]
     def run_all
-      run_on_changes files.reject {|f| partial?(f) }
+      __run_paths files.reject {|f| partial?(f) }
     end
 
-    def resolve_to_owners(paths)
-      owners = files.select do |file|
-        deps = []
-         begin
-           # Get dependencies of file
-           deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
-
-         rescue ::Sass::SyntaxError => e
-           message = "Resolving partial owners of #{file} failed"
-           @formatter.error "Sass > #{e.sass_backtrace_str(file)}", :notification => message
-         end
-
-         # Find intersection with paths
-         deps_in_paths = deps.intersection paths
-         # Any paths in the dependencies?
-         !deps_in_paths.empty?
-      end
-
-      # Return our resolved set of paths to recompile
-      owners
-    end
-
-    # Builds the files given. If a 'partial' file is found (name begins with
-    # '_'), calls {#run_with_partials} so that files which include it are
-    # rebuilt.
+    # Builds the files given.
+    #
+    # If a partial file is found it will attempt to compile any files dependent
+    # on it. If :resolve is set to :partials this will involve searching for all
+    # files that import it, otherwise #run_all will be called.
+    #
+    # If :resolve is set to :all then this will trigger compilation of any files
+    # dependent on the changed files as well.
     #
     # Fires a `:run_on_changes_end` hook with a `changed_files` array and
     # a `success` bool as parameters.
@@ -132,25 +117,28 @@ module Guard
     # @param paths [Array<String>]
     # @raise [:task_has_failed]
     def run_on_changes(paths)
-      if paths.any? {|f| partial?(f) }
-        if options[:smart_partials]
-          paths = resolve_to_owners(paths)
-          __run_paths paths
-          return
+      partials, paths = paths.partition {|f| partial?(f) }
+
+      if partials.any?
+        if options[:resolve] == :partials
+          paths += @runner.owners(partials)
+        else
+          paths = files
         end
-
-        run_all
-        return
+      elsif options[:resolve] == :all
+        paths += @runner.owners(paths)
       end
 
-      if options[:always_resolve_dependencies]
-        paths = resolve_to_owners(paths) + paths
-        __run_paths paths
-        return
-      end
-
-      __run_paths paths
+      __run_paths paths.reject {|f| partial?(f) }
     end
+
+    # Restore previous behaviour, when a file is removed we don't want to call
+    # {#run_on_changes}.
+    def run_on_removals(paths)
+
+    end
+
+    private
 
     def __run_paths(paths)
       changed_files, success = @runner.run(paths)
@@ -160,10 +148,22 @@ module Guard
       throw :task_has_failed unless success
     end
 
-    # Restore previous behaviour, when a file is removed we don't want to call
-    # {#run_on_changes}.
-    def run_on_removals(paths)
+    def resolve_to_owners(paths)
+      files.select do |file|
+        deps = []
+         begin
+           deps = ::Sass::Engine.for_file(file, @options)
+                  .dependencies
+                  .collect {|dep| dep.options[:filename] }
 
+           (deps & paths).any?
+
+         rescue ::Sass::SyntaxError => e
+           message = "Resolving partial owners of #{file} failed"
+           @formatter.error "Sass > #{e.sass_backtrace_str(file)}", notification: message
+           false
+         end
+      end
     end
 
     # @return Whether +path+ is a partial
