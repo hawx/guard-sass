@@ -96,7 +96,7 @@ describe Guard::Sass do
   end
 
   describe '#run_all' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
 
     before do
       Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
@@ -109,7 +109,7 @@ describe Guard::Sass do
   end
 
   describe '#run_on_changes' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
 
     context 'if paths given contain partials' do
       it 'calls #run_all' do
@@ -120,10 +120,43 @@ describe Guard::Sass do
       context "and :smart_partials is given" do
         before { subject.options[:smart_partials] = true  }
         after  { subject.options[:smart_partials] = false }
-        it 'calls #resolve_partials_to_owners' do
-          subject.should_receive(:resolve_partials_to_owners)
-          subject.run_on_changes(['sass/_partial.sass'])
+
+        it 'calls #resolve_to_owners' do
+          paths = ['sass/_partial.sass']
+          resolved_paths = ['a', 'b']
+
+          subject
+            .should_receive(:resolve_to_owners)
+            .with(paths)
+            .and_return(resolved_paths)
+
+          subject
+            .should_receive(:__run_paths)
+            .with(resolved_paths)
+
+          subject.run_on_changes(paths)
         end
+      end
+    end
+
+    context 'when :always_resolve_dependencies is true' do
+      before { subject.options[:always_resolve_dependencies] = true }
+      after  { subject.options[:always_resolve_dependencies] = false }
+
+      it 'compiles all changed and dependent files ' do
+        paths = ['a', 'b']
+        resolved_paths = ['c', 'd']
+
+        subject
+          .should_receive(:resolve_to_owners)
+          .with(paths)
+          .and_return(resolved_paths)
+
+        subject
+          .should_receive(:__run_paths)
+          .with(resolved_paths + paths)
+
+        subject.run_on_changes(paths)
       end
     end
 
