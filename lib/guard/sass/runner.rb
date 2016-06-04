@@ -90,7 +90,7 @@ module Guard
 
         unless options[:shallow]
           @watchers.product([file]).each do |watcher, file|
-            if matches = file.match(watcher.pattern)
+            if matches = watcher.pattern.match(file)
               if matches[1]
                 folder = File.join(options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
                 break
