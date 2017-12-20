@@ -4,41 +4,54 @@ describe Guard::Sass::Runner do
 
   subject { Guard::Sass::Runner }
 
-  let(:watcher)   { Guard::Watcher.new('^(.*)\.s[ac]ss$') }
+  let(:watcher)   { Guard::Watcher.new(/^(.*)\.s[ac]ss$/) }
   let(:formatter) { Guard::Sass::Formatter.new }
   let(:defaults)  { Guard::Sass::DEFAULTS }
 
   before do
-    FileUtils.stub :mkdir_p
-    File.stub :open
-    IO.stub(:read).and_return ''
-    Guard.stub(:listener).and_return stub('Listener')
+    allow(FileUtils).to receive(:mkdir_p).with('css')
+    # for Sass cache
+    allow(FileUtils).to receive(:mkdir_p).and_call_original
+    allow(File).to receive(:read).with('a.sass').and_return(
+      "body\n  color: red"
+    )
+    allow(File).to receive(:write).with('css/a.css', anything)
+    allow(Guard).to receive(:listener).and_return('Listener')
+  end
+
+  after do
+    FileUtils.rm_rf '.sass-cache'
   end
 
   describe '#run' do
 
     it 'returns a list of changed files' do
-      subject.new([watcher], formatter, defaults).run(['a.sass'])[0].should == ['css/a.css']
+      expect(
+        subject.new([watcher], formatter, defaults).run(['a.sass'])[0]
+      )
+        .to eq ['css/a.css']
     end
 
     context 'if errors when compiling' do
       subject { Guard::Sass::Runner.new([watcher], formatter, defaults) }
 
       before do
-        $_stderr, $stderr = $stderr, StringIO.new
-        IO.stub(:read).and_return('body { color: red;')
+        allow(File).to receive(:read).with('a.sass').and_return(
+          'body { color: red;'
+        )
       end
 
-      after { $stderr = $_stderr }
-
-      it 'shows a warning message' do
-        formatter.should_receive(:error).with('Sass > Syntax error: Invalid CSS after "body ": expected selector, was "{ color: red;"
-        on line 1 of a.sass', :notification => 'rebuild of a.sass failed')
+      it 'shows an error message' do
+        expect(formatter).to receive(:error).with(
+          'Sass > Error: Invalid CSS after "body ": expected selector, was "{ color: red;"
+        on line 1 of a.sass',
+          :notification => 'rebuild of a.sass failed'
+        ).once
         subject.run(['a.sass'])
       end
 
       it 'returns false' do
-        subject.run(['a.sass'])[1].should == false
+        expect(subject.run(['a.sass'])[1]).to eq false
       end
 
     end
@@ -47,20 +60,23 @@ describe Guard::Sass::Runner do
       subject { Guard::Sass::Runner.new([watcher], formatter, defaults) }
 
       it 'shows a success message' do
-        formatter.should_receive(:success).with("a.sass -> a.css", instance_of(Hash))
+        expect(formatter).to receive(:success).with(
+          "a.sass -> a.css", instance_of(Hash)
+        )
         subject.run(['a.sass'])
       end
 
       it 'returns true' do
-        subject.run(['a.sass'])[1].should == true
+        expect(subject.run(['a.sass'])[1]).to eq true
       end
     end
 
     it 'compiles the files' do
       Guard::Sass::DEFAULTS[:load_paths] = ['sass']
 
-      mock_engine = mock(::Sass::Engine)
-      ::Sass::Engine.should_receive(:new).with('', {
+      sass_engine = double(:sass_engine)
+
+      allow(::Sass::Engine).to receive(:new).with("body\n  color: red", {
         :filesystem_importer => Guard::Sass::Importer,
         :load_paths          => ['sass'],
         :style               => :nested,
@@ -74,8 +90,9 @@ describe Guard::Sass::Runner do
         :shallow             => false,
         :noop                => false,
         :hide_success        => false
-      }).and_return(mock_engine)
-      mock_engine.should_receive(:render)
+      }).and_return(sass_engine)
+
+      expect(sass_engine).to receive(:render)
 
       subject.new([watcher], formatter, defaults).run(['a.sass'])
     end
