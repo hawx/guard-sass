@@ -21,8 +21,8 @@ module Guard
           if time = opts.delete(:time)
             benchmark = "[\e[33m%2.2fs\e[0m] " % time
           end
-          ::Guard::UI.info("\t\e[1;37mSass\e[0m %s%s" % [benchmark, msg], opts)
-          notify(opts[:notification], :image => :success)
+          Compat::UI.info("\t\e[1;37mSass\e[0m %s%s" % [benchmark, msg], opts)
+          notify(opts[:notification], :image => :success) if opts[:notification]
         end
       end
 
@@ -31,8 +31,8 @@ module Guard
       # @param msg [String]
       # @param opts [Hash]
       def error(msg, opts={})
-        ::Guard::UI.error("[Sass] #{msg}", opts)
-        notify(opts[:notification], :image => :failed)
+        Compat::UI.error("[Sass] #{msg}", opts)
+        notify(opts[:notification], :image => :failed) if opts[:notification]
       end
 
       # Show a system notification.

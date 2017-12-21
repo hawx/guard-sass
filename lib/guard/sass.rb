@@ -1,9 +1,7 @@
 require 'sass'
 require 'sass/plugin'
 
-require 'guard'
-require 'guard/plugin'
-require 'guard/watcher'
+require 'guard/compat/plugin'
 
 module Guard
   class Sass < Plugin
@@ -48,7 +46,9 @@ module Guard
       if options[:input]
         load_paths << options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        options[:watchers] << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.s[ac]ss)$})
+        options[:watchers] << Guard::Watcher.new(
+          %r{^#{ options[:input] }/(.+\.s[ac]ss)$}
+        )
       end
       options = DEFAULTS.merge(options)
 
@@ -81,7 +81,7 @@ module Guard
 
     # @return [Array<String>] Paths of all sass/scss files
     def files
-      Watcher.match_files self, Dir['**/*.s[ac]ss']
+      Compat.matching_files self, Dir['**/*.s[ac]ss']
     end
 
     # If option set to run all on start, run all when started.
@@ -101,14 +101,14 @@ module Guard
     def resolve_partials_to_owners(paths)
       # Get all files that might have imports
       search_files = Dir.glob("#{options[:input]}/**/*.s[ac]ss")
-      search_files = Watcher.match_files(self, search_files)
+      search_files = Compat.matching_files(self, search_files)
 
       # Get owners
       owners = search_files.select do |file|
         deps = []
          begin
            # Get dependencies of file
-           deps = ::Sass::Engine.for_file(file, @options).dependencies.collect! {|dep| dep.options[:filename] }
+           deps = ::Sass::Engine.for_file(file, options).dependencies.collect! {|dep| dep.options[:filename] }
 
          rescue ::Sass::SyntaxError => e
            message = "Resolving partial owners of #{file} failed"
@@ -128,7 +128,7 @@ module Guard
     def run_with_partials(paths)
       if options[:smart_partials]
         paths = resolve_partials_to_owners(paths)
-        run_on_changes Watcher.match_files(self, paths) unless paths.nil?
+        run_on_changes Compat.matching_files(self, paths) unless paths.nil?
       else
         run_all
       end
@@ -167,5 +167,5 @@ module Guard
   end
 end
 
-require 'guard/sass/runner'
-require 'guard/sass/formatter'
+require_relative 'sass/runner'
+require_relative 'sass/formatter'

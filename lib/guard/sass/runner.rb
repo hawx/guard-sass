@@ -59,7 +59,6 @@ module Guard
                       else
                         "%s -> %s" % [short_file.ljust(max_length), short_css_file]
                       end
-
             @formatter.success "#{message}", :notification => message, :time => time
             changed_files << css_file
 
@@ -90,7 +89,7 @@ module Guard
 
         unless options[:shallow]
           @watchers.product([file]).each do |watcher, file|
-            if matches = watcher.pattern.match(file)
+            if matches = watcher.match(file)
               if matches[1]
                 folder = File.join(options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
                 break
@@ -114,7 +113,7 @@ module Guard
 
         unless options[:noop]
           FileUtils.mkdir_p(dir)
-          File.open(path, 'w') {|f| f.write(content) }
+          File.write(path, content)
         end
 
         path

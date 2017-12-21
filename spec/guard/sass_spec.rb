@@ -9,15 +9,15 @@ describe Guard::Sass do
 
   before do
     subject.instance_variable_set :@runner, runner
-    runner.stub :run
-    Guard.stub(:listener).and_return stub('Listener')
+    allow(runner).to receive(:run)
+    allow(Guard).to receive(:listener).and_return('Listener')
   end
 
   describe '#initialize' do
 
     context 'when no options given' do
       it 'uses defaults' do
-        subject.options.should == Guard::Sass::DEFAULTS
+        expect(subject.options).to eq Guard::Sass::DEFAULTS
       end
     end
 
@@ -36,7 +36,8 @@ describe Guard::Sass do
       }
 
       it 'merges them with defaults' do
-        subject.options.should == {
+        expect(subject.options).to eq({
+          :watchers     => [],
           :all_on_start => false,
           :output       => 'css',
           :extension    => '.css',
@@ -47,7 +48,7 @@ describe Guard::Sass do
           :hide_success => true,
           :line_numbers => true,
           :load_paths   => ['sass']
-        }
+        })
       end
     end
 
@@ -55,24 +56,29 @@ describe Guard::Sass do
       subject { Guard::Sass.new(watchers: [], input: 'app/styles') }
 
       it 'creates a watcher' do
-        subject.should have(1).watchers
+        expect(subject.options[:watchers].size).to eq(1)
       end
 
       it 'watches all *.s[ac]ss files' do
-        subject.watchers.first.pattern.should == %r{^app/styles/(.+\.s[ac]ss)$}
+        expect(subject.options[:watchers].first)
+          .to eq Guard::Watcher.new(%r{^app/styles/(.+\.s[ac]ss)$})
       end
 
       context 'without an output option' do
         it 'sets the output directory to the input directory' do
-          subject.options[:output].should == 'app/styles'
+          expect(subject.options[:output]).to eq 'app/styles'
         end
       end
 
       context 'with an output option' do
-        subject { Guard::Sass.new(input: 'app/styles', output: 'public/styles', watchers: []) }
+        subject do
+          Guard::Sass.new(
+            input: 'app/styles', output: 'public/styles', watchers: []
+          )
+        end
 
         it 'uses the output directory' do
-          subject.options[:output].should == 'public/styles'
+          expect(subject.options[:output]).to eq 'public/styles'
         end
       end
     end
@@ -81,7 +87,7 @@ describe Guard::Sass do
 
   describe '#start' do
     it 'does not call #run_all' do
-      subject.should_not_receive(:run_all)
+      expect(subject).not_to receive(:run_all)
       subject.start
     end
 
@@ -89,31 +95,33 @@ describe Guard::Sass do
       subject { Guard::Sass.new(watchers: [], all_on_start: true) }
 
       it 'calls #run_all' do
-        subject.should_receive(:run_all)
+        expect(subject).to receive(:run_all)
         subject.start
       end
     end
   end
 
   describe '#run_all' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
 
     before do
-      Dir.stub(:[]).and_return ['a.sass', 'b.scss', 'c.ccss', 'd.css', 'e.scsc']
+      allow(Guard::Watcher).to receive(:match_files).and_return(
+        ['a.sass', 'b.scss']
+      )
     end
 
     it 'calls #run_on_changes with all watched files' do
-      subject.should_receive(:run_on_changes).with(['a.sass', 'b.scss'])
+      expect(subject).to receive(:run_on_changes).with(['a.sass', 'b.scss'])
       subject.run_all
     end
   end
 
   describe '#run_on_changes' do
-    subject { Guard::Sass.new(watchers: [Guard::Watcher.new('(.*)\.s[ac]ss')]) }
+    subject { Guard::Sass.new(watchers: [Guard::Watcher.new(/(.*)\.s[ac]ss/)]) }
 
     context 'if paths given contain partials' do
       it 'calls #run_all' do
-        subject.should_receive(:run_all)
+        expect(subject).to receive(:run_all)
         subject.run_on_changes(['sass/_partial.sass'])
       end
 
@@ -121,14 +129,14 @@ describe Guard::Sass do
         before { subject.options[:smart_partials] = true  }
         after  { subject.options[:smart_partials] = false }
         it 'calls #resolve_partials_to_owners' do
-          subject.should_receive(:resolve_partials_to_owners)
+          expect(subject).to receive(:resolve_partials_to_owners)
           subject.run_on_changes(['sass/_partial.sass'])
         end
       end
     end
 
     it 'starts the Runner' do
-      runner.should_receive(:run).with(['a.sass']).and_return([nil, true])
+      expect(runner).to receive(:run).with(['a.sass']).and_return([nil, true])
       subject.run_on_changes(['a.sass'])
     end
   end
