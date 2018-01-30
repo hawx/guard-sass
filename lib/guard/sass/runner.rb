@@ -3,15 +3,14 @@ require 'benchmark'
 
 module Guard
   class Sass
-
+    # Sass runner for Guard
     class Runner
-
       attr_reader :options
 
       # @param watchers [Array<Guard::Watcher>]
       # @param formatter [Guard::Sass::Formatter]
       # @param options [Hash] See Guard::Sass::DEFAULTS for available options
-      def initialize(watchers, formatter, options={})
+      def initialize(watchers, formatter, options = {})
         @watchers  = watchers
         @formatter = formatter
         @options   = options
@@ -27,58 +26,49 @@ module Guard
       private
 
       # @param files [Array<String>] Files to compile
-      # @return [Array<Array,Array>] The files which have been changed and an array
+      # @return [Array<Array,Array>]
+      #   The files which have been changed and an array
       #  of any error messages if any errors occurred.
       def compile_files(files)
-        errors        = []
-        changed_files = []
+        input, output = options.values_at(:input, :output)
 
-        # Assume partials have been checked for previously, so no partials are included here
-        rinput  = (options[:input]  || "").reverse
-        routput = (options[:output] || "").reverse
+        short_files = files.map { |file| file.sub(%r{^#{input}/}, '') }
+        max_length = short_files.map(&:length).max
 
-        input   = options[:input]  || ''
-        output  = options[:output] || ''
+        files.zip(short_files).each_with_object([[], []]) \
+          do |(file, short_file), (changed_files, errors)|
+            begin
+              css_file = nil
+              time = Benchmark.realtime do
+                css_file = write_file(compile(file), get_output_dir(file), file)
+              end
 
-        max_length = files.map do |file|
-          file.sub(/^#{input}/, '').gsub(/^\//, '').length
-        end.max || 0
+              short_css_file = css_file.sub(%r{^#{output}/}, '')
 
-        files.each do |file|
-          begin
-            css_file = nil
-            time = Benchmark.realtime do
-              css_file = write_file(compile(file), get_output_dir(file), file)
+              message =
+                if options[:noop]
+                  "verified #{file} (#{time})"
+                else
+                  "#{short_file.ljust(max_length)} -> #{short_css_file}"
+                end
+              @formatter.success message, notification: message, time: time
+              changed_files << css_file
+            rescue ::Sass::SyntaxError => e
+              message =
+                "#{options[:noop] ? 'validation' : 'rebuild'} of #{file} failed"
+              errors << message
+              @formatter.error(
+                "Sass > #{e.sass_backtrace_str(file)}",
+                notification: message
+              )
             end
-
-            short_file     = file.sub(/^#{input}/, '').gsub(/^\//, '')
-            short_css_file = css_file.sub(/^#{output}/, '').gsub(/^\//, '')
-
-            message = if options[:noop]
-                        "verified #{file} (#{time})"
-                      else
-                        "%s -> %s" % [short_file.ljust(max_length), short_css_file]
-                      end
-
-            @formatter.success "#{message}", :notification => message, :time => time
-            changed_files << css_file
-
-          rescue ::Sass::SyntaxError => e
-            message = (options[:noop] ? 'validation' : 'rebuild') + " of #{file} failed"
-            errors << message
-            @formatter.error "Sass > #{e.sass_backtrace_str(file)}", :notification => message
           end
-        end
-
-        [changed_files.compact, errors]
       end
 
       # @param file [String] Path to sass/scss file to compile
       # @return [String] Compiled css.
       def compile(file)
-        sass_options = {
-          :filesystem_importer => Importer,
-        }.merge(options)
+        sass_options = { filesystem_importer: Importer }.merge(options)
 
         ::Sass::Engine.for_file(file, sass_options).render
       end
@@ -88,18 +78,13 @@ module Guard
       def get_output_dir(file)
         folder = options[:output]
 
-        unless options[:shallow]
-          @watchers.product([file]).each do |watcher, file|
-            if matches = watcher.pattern.match(file)
-              if matches[1]
-                folder = File.join(options[:output], File.dirname(matches[1])).gsub(/\/\.$/, '')
-                break
-              end
-            end
-          end
-        end
+        return folder if options[:shallow]
 
-        folder
+        @watchers.each do |watcher|
+          next unless (matches = watcher.match(file))
+          next unless matches[1]
+          break File.join(folder, File.dirname(matches[1])).gsub(%r{/\.$}, '')
+        end
       end
 
       # Write file contents, creating directories where required.
@@ -109,12 +94,13 @@ module Guard
       # @param file [String] Name of the file
       # @return [String] Path of file written
       def write_file(content, dir, file)
-        filename = File.basename(file).gsub(/(\.s?[ac]ss)+/, options[:extension])
+        filename =
+          File.basename(file).gsub(/(\.s?[ac]ss)+/, options[:extension])
         path = File.join(dir, filename)
 
         unless options[:noop]
           FileUtils.mkdir_p(dir)
-          File.open(path, 'w') {|f| f.write(content) }
+          File.write(path, content)
         end
 
         path
